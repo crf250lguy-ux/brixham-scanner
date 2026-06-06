@@ -138,6 +138,14 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .notif-empty{text-align:center;padding:2rem;color:#6b7280;font-size:14px;}
 .notif-item{background:white;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.07);border-left:4px solid #dc2626;}
 .notif-item.resolved{border-left-color:#16a34a;opacity:0.6;}
+.notif-item{cursor:pointer;}
+.notif-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6;}
+.notif-detail.open{display:block;}
+.notif-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.notif-detail-item label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px;}
+.notif-detail-item span{font-size:13px;font-weight:600;color:#111827;}
+.notif-chevron{font-size:12px;color:#6b7280;transition:transform 0.2s;}
+.notif-chevron.open{transform:rotate(180deg);}
 .notif-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
 .notif-boxid{font-size:16px;font-weight:700;color:#dc2626;}
 .notif-time{font-size:11px;color:#9ca3af;}
@@ -185,6 +193,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div class="menu-card red" onclick="goTo('flag-screen')"><div class="menu-icon">🚩</div><div class="menu-label">Flag a box</div><div class="menu-desc">Report a problem with a box</div></div>
     <div class="menu-card amber" onclick="goTo('notif-screen')"><div class="notif-badge" id="notif-badge">0</div><div class="menu-icon">🔔</div><div class="menu-label">Notifications</div><div class="menu-desc">View flagged box reports</div></div>
     <div class="menu-card green" onclick="goTo('data-screen')"><div class="menu-icon">📂</div><div class="menu-label">Auction data</div><div class="menu-desc">Load today's CSV from Neptune</div></div>
+    <div class="menu-card" style="border-top:4px solid #0891b2;" onclick="goTo('supply-screen')"><div class="menu-icon">🐟</div><div class="menu-label">Add to supply</div><div class="menu-desc">Report an unregistered box</div></div>
   </div>
 </div></div>
 
@@ -373,7 +382,53 @@ function stopPhotoCamera(){if(photoStream){photoStream.getTracks().forEach(t=>t.
 function capturePhoto(){const vid=document.getElementById("f-photo-video"),can=document.getElementById("f-photo-canvas");can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext("2d").drawImage(vid,0,0);capturedPhotoData=can.toDataURL("image/jpeg",0.8);stopPhotoCamera();document.getElementById("f-photo-img").src=capturedPhotoData;document.getElementById("f-photo-preview").style.display="block";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="none";document.getElementById("f-photo-btn").style.display="none";}
 function retakePhoto(){capturedPhotoData=null;document.getElementById("f-photo-preview").style.display="none";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="";document.getElementById("f-photo-btn").style.display="block";}
 function canResolve(flag){return currentUser===flag.raisedBy||currentRole==="Admin"||currentRole==="Auctioneer";}
-function renderNotifications(){const list=document.getElementById("notif-list");if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}list.innerHTML="";[...flags].reverse().forEach(flag=>{const div=document.createElement("div");div.className="notif-item"+(flag.resolved?" resolved":"");div.innerHTML="<div class='notif-top'><span class='notif-boxid'>&#128681; "+flag.boxId+"</span><span class='notif-time'>"+flag.time+"</span></div><div class='notif-issue'>"+flag.issue+"</div>"+(flag.notes?"<div class='notif-notes'>"+flag.notes+"</div>":"")+(flag.photo?"<img src='"+flag.photo+"' style='width:100%;border-radius:8px;margin:6px 0;' alt='Photo'/>":"")+"<div style='display:flex;justify-content:space-between;align-items:center;'><span class='notif-by'>Raised by: "+flag.raisedBy+"</span>"+(!flag.resolved?(canResolve(flag)?"<button class='resolve-btn' onclick='resolveFlag("+flag.id+")'>✓ Mark resolved</button>":"<span style='font-size:11px;color:#9ca3af;'>Only raiser, admin or auctioneer can resolve</span>"):"<span style='font-size:11px;color:#16a34a;font-weight:600;'>✓ Resolved</span>")+"</div>";list.appendChild(div);});}
+function toggleNotif(id){const detail=document.getElementById('nd-'+id),chev=document.getElementById('nc-'+id);if(detail){detail.classList.toggle('open');chev.classList.toggle('open');}}
+function renderNotifications(){
+  const list=document.getElementById("notif-list");
+  if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}
+  list.innerHTML="";
+  [...flags].reverse().forEach(flag=>{
+    const box=AUCTION_DATA[flag.boxId];
+    const div=document.createElement("div");
+    const isSupply=flag.isSupply||false;
+    const icon=isSupply?"&#128031;":"&#128681;";
+    const canExpand=!!(box||isSupply);
+    div.className="notif-item"+(flag.resolved?" resolved":"");if(canExpand){div.onclick=()=>toggleNotif(flag.id);div.style.cursor='pointer';}
+    let boxDetail="";
+    if(box&&!isSupply){
+      boxDetail="<div class='notif-detail' id='nd-"+flag.id+"'>"+
+        "<div class='notif-detail-grid'>"+
+        "<div class='notif-detail-item'><label>Species</label><span>"+box.species+"</span></div>"+
+        "<div class='notif-detail-item'><label>Weight</label><span>"+box.weight+"</span></div>"+
+        "<div class='notif-detail-item'><label>Grade</label><span>"+box.grade+"</span></div>"+
+        "<div class='notif-detail-item'><label>Vessel</label><span>"+box.vessel+"</span></div>"+
+        "<div class='notif-detail-item'><label>Buyer</label><span>"+box.buyer+"</span></div>"+
+        "<div class='notif-detail-item'><label>Price/kg</label><span>"+box.priceKg+"</span></div>"+
+        "</div>"+
+        (flag.notes?"<div style='background:#fef9c3;border-radius:8px;padding:8px 10px;font-size:13px;color:#854d0e;margin-bottom:8px;'><strong>Note:</strong> "+flag.notes+"</div>":"")+
+        (flag.photo?"<img src='"+flag.photo+"' style='width:100%;border-radius:8px;margin:6px 0;' alt='Photo'/>":"")+
+        "</div>";
+    } else if(isSupply){
+      boxDetail="<div class='notif-detail' id='nd-"+flag.id+"'>"+
+        "<div style='font-size:13px;color:#374151;margin-bottom:6px;'>"+flag.notes+"</div>"+
+        (flag.photo?"<img src='"+flag.photo+"' style='width:100%;border-radius:8px;margin:6px 0;' alt='Photo'/>":"")+
+        "</div>";
+    }
+
+    div.innerHTML=
+      "<div style='display:flex;justify-content:space-between;align-items:flex-start;cursor:"+( canExpand?"pointer":"default")+"' onclick='"+( canExpand?"toggleNotif("+flag.id+")":"")+ "'>"+
+        "<div><span class='notif-boxid'>"+icon+" "+flag.boxId+"</span> <span class='notif-time'>"+flag.time+"</span></div>"+
+        (canExpand?"<span class='notif-chevron' id='nc-"+flag.id+"'>&#9660;</span>":"")+
+      "</div>"+
+      "<div class='notif-issue'>"+flag.issue+"</div>"+
+      boxDetail+
+      "<div style='display:flex;justify-content:space-between;align-items:center;margin-top:8px;'>"+
+        "<span class='notif-by'>Raised by: "+flag.raisedBy+"</span>"+
+        (!flag.resolved?(canResolve(flag)?"<button class='resolve-btn' onclick='event.stopPropagation();resolveFlag("+flag.id+")'>&#10003; Mark resolved</button>":"<span style='font-size:11px;color:#9ca3af;'>Only raiser, admin or auctioneer can resolve</span>"):"<span style='font-size:11px;color:#16a34a;font-weight:600;'>&#10003; Resolved</span>")+
+      "</div>";
+    list.appendChild(div);
+  });
+}
 function resolveFlag(id){const flag=flags.find(f=>f.id===id);if(flag)flag.resolved=true;renderNotifications();updateMenuStats();}
 function clearResolved(){flags=flags.filter(f=>!f.resolved);renderNotifications();updateMenuStats();}
 function loadCSV(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const lines=e.target.result.trim().split("\n");if(lines.length<2)throw new Error("File appears empty");const headers=lines[0].split(",").map(h=>h.trim().replace(/"/g,"").toLowerCase());const required=["box_id","species","weight","grade","lot_number","vessel","price_per_kg","buyer_name","buyer_location"];const missing=required.filter(r=>!headers.includes(r));if(missing.length)throw new Error("Missing columns: "+missing.join(", "));const newData={};for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVLine(line);const row={};headers.forEach((h,idx)=>row[h]=(vals[idx]||"").trim().replace(/"/g,""));const id=row["box_id"].toUpperCase();newData[id]={species:row["species"],weight:row["weight"],grade:row["grade"],lot:row["lot_number"],vessel:row["vessel"],priceKg:row["price_per_kg"],buyer:row["buyer_name"],buyerLoc:row["buyer_location"]};}const count=Object.keys(newData).length;if(!count)throw new Error("No valid rows found");AUCTION_DATA=newData;printed=0;rebuildChips();document.getElementById("data-mode-badge").className="csv-using-live";document.getElementById("data-mode-badge").textContent="✅ Live data - "+count+" boxes from "+file.name;document.getElementById("data-sub").textContent="Live data loaded";document.getElementById("ticket-data-label").textContent="Live data";document.getElementById("t-chips-label").textContent="TODAY'S BOXES - tap to look up";showCSVStatus("success","✅ Loaded "+count+" boxes from "+file.name);}catch(err){showCSVStatus("error","❌ "+err.message);}};reader.readAsText(file);event.target.value="";}
@@ -381,6 +436,79 @@ function parseCSVLine(line){const result=[];let cur="",inQ=false;for(let i=0;i<l
 function showCSVStatus(type,msg){const el=document.getElementById("csv-status");el.className="csv-status show "+type;el.textContent=msg;setTimeout(()=>el.classList.remove("show"),6000);}
 function resetToDemo(){AUCTION_DATA=Object.assign({},DEMO_DATA);printed=0;rebuildChips();document.getElementById("data-mode-badge").className="csv-using-demo";document.getElementById("data-mode-badge").textContent="⚠️ Using demo data - load a real CSV to begin";document.getElementById("data-sub").textContent="Demo data loaded";document.getElementById("ticket-data-label").textContent="Demo data";document.getElementById("t-chips-label").textContent="DEMO - tap a box to try it";}
 function downloadTemplate(){const csv="box_id,species,weight,grade,lot_number,vessel,price_per_kg,buyer_name,buyer_location\nBX-001,Sole,18kg,A,L-2201,Ocean Harvest,£8.40,Plymouth Fish Co.,Plymouth Devon\nBX-002,Cod,22kg,A,L-2202,Silver Fin,£4.20,Brixham Seafoods Ltd,Brixham Devon";const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="neptune-export-template.csv";a.click();}
+
+let supplyEntries=[],sPhotoStream=null,sCapturedPhoto=null;
+function toggleSupplyCamera(){
+  if(sPhotoStream){stopSupplyCamera();return;}
+  const vid=document.getElementById('s-photo-video');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>{
+    sPhotoStream=s;vid.srcObject=s;vid.style.display='block';
+    document.getElementById('s-photo-icon').style.display='none';
+    document.getElementById('s-photo-label').style.display='none';
+    document.getElementById('s-photo-btn').textContent='Close camera';
+    document.getElementById('s-photo-btn').className='btn btn-red';
+    document.getElementById('s-capture-btn').style.display='block';
+  }).catch(()=>alert('Camera not available.'));
+}
+function stopSupplyCamera(){
+  if(sPhotoStream){sPhotoStream.getTracks().forEach(t=>t.stop());sPhotoStream=null;}
+  const vid=document.getElementById('s-photo-video');if(!vid)return;
+  vid.style.display='none';
+  document.getElementById('s-photo-icon').style.display='';
+  document.getElementById('s-photo-label').style.display='';
+  document.getElementById('s-photo-btn').textContent='Open camera';
+  document.getElementById('s-photo-btn').className='btn btn-grey';
+  document.getElementById('s-capture-btn').style.display='none';
+}
+function sCapturePhoto(){
+  const vid=document.getElementById('s-photo-video'),can=document.getElementById('s-photo-canvas');
+  can.width=vid.videoWidth;can.height=vid.videoHeight;
+  can.getContext('2d').drawImage(vid,0,0);
+  sCapturedPhoto=can.toDataURL('image/jpeg',0.8);
+  stopSupplyCamera();
+  document.getElementById('s-photo-img').src=sCapturedPhoto;
+  document.getElementById('s-photo-preview').style.display='block';
+  document.getElementById('s-photo-frame').style.display='none';
+  document.getElementById('s-photo-btn').style.display='none';
+}
+function sRetakePhoto(){
+  sCapturedPhoto=null;
+  document.getElementById('s-photo-preview').style.display='none';
+  document.getElementById('s-photo-frame').style.display='';
+  document.getElementById('s-photo-btn').style.display='block';
+}
+function submitSupply(){
+  const vessel=document.getElementById('s-vessel').value.trim();
+  const species=document.getElementById('s-species').value.trim();
+  const weight=document.getElementById('s-weight').value.trim();
+  const notes=document.getElementById('s-notes').value.trim();
+  const err=document.getElementById('s-error');
+  if(!vessel||!species||!weight){err.style.display='block';return;}
+  err.style.display='none';
+  const now=new Date(),timeStr=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const entry={id:Date.now(),vessel,species,weight,notes,photo:sCapturedPhoto,raisedBy:currentUser,time:timeStr,resolved:false};
+  supplyEntries.push(entry);
+  flags.push({id:entry.id,boxId:'UNREGISTERED',issue:'Unregistered box - add to supply',notes:species+' | '+weight+' | Vessel: '+vessel+(notes?' | '+notes:''),photo:sCapturedPhoto,raisedBy:currentUser,time:timeStr,resolved:false,isSupply:true});
+  updateMenuStats();
+
+  document.getElementById('supply-form-card').style.display='none';
+  document.getElementById('s-success').style.display='block';
+  document.getElementById('s-success-msg').textContent=species+' ('+weight+') from '+vessel+' has been sent to the auctioneer.';
+  sCapturedPhoto=null;
+}
+function clearSupplyForm(){
+  ['s-vessel','s-species','s-weight','s-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('s-error').style.display='none';
+  document.getElementById('s-success').style.display='none';
+  document.getElementById('supply-form-card').style.display='block';
+  stopSupplyCamera();sCapturedPhoto=null;
+  document.getElementById('s-photo-preview').style.display='none';
+  document.getElementById('s-photo-frame').style.display='';
+  document.getElementById('s-photo-btn').style.display='block';
+  document.getElementById('s-photo-btn').textContent='Open camera';
+  document.getElementById('s-photo-btn').className='btn btn-grey';
+  document.getElementById('s-capture-btn').style.display='none';
+}
 </script>
 
 <!-- SUPPLY -->
@@ -433,6 +561,7 @@ function downloadTemplate(){const csv="box_id,species,weight,grade,lot_number,ve
     <div style="font-size:15px;font-weight:700;color:#166534;margin-bottom:6px;">Box added to supply queue</div>
     <div style="font-size:13px;color:#166534;margin-bottom:16px;" id="s-success-msg">The auctioneer has been notified.</div>
     <button class="btn" style="background:#0891b2;color:white;" onclick="clearSupplyForm()">Add another box</button>
+    <button class="btn btn-blue" onclick="goTo('ticket-screen')" style="margin-top:6px;">&#127991;&#65039; Continue ticketing</button>
     <button class="btn btn-grey" onclick="goTo('menu-screen')" style="margin-top:6px;">&#8592; Back to menu</button>
   </div>
 </div></div>
