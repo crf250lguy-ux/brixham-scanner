@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Brixham Trawler Agents — Box Scanner</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f0f4f8; min-height: 100vh; }
+  .app { max-width: 440px; margin: 0 auto; padding: 1rem; }
+
+  .header { background: #0C447C; color: white; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 12px; }
+  .logo-circle { width: 44px; height: 44px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .header h1 { font-size: 16px; font-weight: 600; }
+  .header p { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .stat { background: white; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+  .stat .s-num { font-size: 22px; font-weight: 600; color: #0C447C; }
+  .stat .s-lbl { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+  .card { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+  .card h2 { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+
+  .video-frame { width: 100%; aspect-ratio: 1; background: #111827; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .scanner-line { position: absolute; left: 10%; right: 10%; height: 2px; background: #3b82f6; top: 30%; animation: scan 2s ease-in-out infinite; display: none; }
+  @keyframes scan { 0%,100% { top: 20%; } 50% { top: 75%; } }
+  .corner { position: absolute; width: 26px; height: 26px; border-color: #3b82f6; border-style: solid; }
+  .tl { top: 12px; left: 12px; border-width: 3px 0 0 3px; border-radius: 3px 0 0 0; }
+  .tr { top: 12px; right: 12px; border-width: 3px 3px 0 0; border-radius: 0 3px 0 0; }
+  .bl { bottom: 12px; left: 12px; border-width: 0 0 3px 3px; border-radius: 0 0 0 3px; }
+  .br { bottom: 12px; right: 12px; border-width: 0 3px 3px 0; border-radius: 0 0 3px 0; }
+  .cam-icon { font-size: 48px; color: rgba(255,255,255,0.2); }
+  .cam-label { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 8px; }
+  #video { width: 100%; height: 100%; object-fit: cover; display: none; }
+  #canvas-el { display: none; }
+
+  .scanning-bar { display: none; align-items: center; gap: 8px; background: #eff6ff; border-radius: 8px; padding: 8px 12px; margin-top: 10px; }
+  .scanning-bar.show { display: flex; }
+  .pulse { width: 8px; height: 8px; background: #3b82f6; border-radius: 50%; animation: pulse 1s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+  .scanning-bar span { font-size: 13px; color: #1d4ed8; }
+
+  .btn { display: block; width: 100%; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-top: 10px; transition: background 0.15s, transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-blue { background: #185FA5; color: white; }
+  .btn-blue:hover { background: #0C447C; }
+  .btn-red { background: #fee2e2; color: #991b1b; }
+  .btn-red:hover { background: #fecaca; }
+  .btn-grey { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+  .btn-grey:hover { background: #e5e7eb; }
+  .btn-green { background: #166534; color: white; }
+
+  .manual-row { display: flex; gap: 8px; margin-top: 10px; }
+  .manual-row input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: 14px; color: #111827; background: #f9fafb; outline: none; transition: border-color 0.15s; }
+  .manual-row input:focus { border-color: #3b82f6; background: white; }
+  .manual-row button { flex-shrink: 0; padding: 10px 16px; border-radius: 10px; background: #f3f4f6; color: #374151; border: 1.5px solid #e5e7eb; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 0; width: auto; }
+  .manual-row button:hover { background: #e5e7eb; }
+
+  .error-box { background: #fee2e2; border-radius: 10px; padding: 12px 14px; color: #991b1b; font-size: 14px; margin-bottom: 1rem; display: none; align-items: center; gap: 8px; }
+  .error-box.show { display: flex; }
+
+  .result-card { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); display: none; }
+  .result-card.show { display: block; }
+
+  .result-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #f3f4f6; }
+  .box-id { font-size: 28px; font-weight: 700; color: #0C447C; }
+  .box-sub { font-size: 12px; color: #6b7280; margin-top: 2px; }
+  .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+  .badge-sold { background: #dcfce7; color: #166534; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+  .detail-item label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 3px; }
+  .detail-item span { font-size: 14px; font-weight: 600; color: #111827; }
+
+  .buyer-section { background: #f0f4f8; border-radius: 10px; padding: 12px; margin-bottom: 1rem; }
+  .buyer-label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .buyer-name { font-size: 16px; font-weight: 700; color: #111827; }
+  .buyer-loc { font-size: 13px; color: #6b7280; }
+
+  .label-section { border: 2px dashed #d1d5db; border-radius: 10px; padding: 14px; background: #fff; margin-bottom: 1rem; }
+  .label-header { display: flex; justify-content: space-between; font-size: 10px; color: #6b7280; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .label-body { display: flex; justify-content: space-between; align-items: flex-end; }
+  .label-species { font-size: 22px; font-weight: 800; color: #111827; }
+  .label-details { font-size: 11px; color: #6b7280; margin-top: 3px; font-family: monospace; }
+  .label-buyer { font-size: 13px; font-weight: 700; color: #111827; margin-top: 6px; }
+  .label-boxnum { font-size: 32px; font-weight: 900; color: #0C447C; text-align: right; line-height: 1; }
+  .label-lot { font-size: 11px; color: #6b7280; text-align: right; }
+
+  /* ── Demo QR list ── */
+  .demo-section { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+  .demo-section h3 { font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
+  .demo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .demo-chip { padding: 5px 12px; border-radius: 20px; background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .demo-chip:hover { background: #dbeafe; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo-circle">🐟</div>
+    <div>
+      <h1>Brixham Trawler Agents</h1>
+      <p>Box Label Scanner</p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="s-num" id="stat-total">12</div><div class="s-lbl">Boxes today</div></div>
+    <div class="stat"><div class="s-num" id="stat-printed">0</div><div class="s-lbl">Printed</div></div>
+    <div class="stat"><div class="s-num" id="stat-pending">12</div><div class="s-lbl">Pending</div></div>
+  </div>
+
+  <div class="card">
+    <h2>📷 Scan box QR code</h2>
+    <div class="video-frame" id="video-frame">
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <div class="scanner-line" id="scanner-line"></div>
+      <div class="cam-icon" id="cam-icon">📷</div>
+      <p class="cam-label" id="cam-label">Tap to start camera</p>
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas-el"></canvas>
+    </div>
+    <div class="scanning-bar" id="scan-bar">
+      <div class="pulse"></div>
+      <span>Scanning for QR code...</span>
+    </div>
+    <button class="btn btn-blue" id="cam-btn" onclick="toggleCamera()">Start camera</button>
+    <div class="manual-row">
+      <input type="text" id="manual-input" placeholder="Or type box ID, e.g. BX-004" />
+      <button onclick="manualLookup()">Look up</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h3>DEMO — tap a box to try it</h3>
+    <div class="demo-chips" id="demo-chips"></div>
+  </div>
+
+  <div class="error-box" id="error-box">
+    ⚠️ Box not found in today's auction data. Check the ID and try again.
+  </div>
+
+  <div class="result-card" id="result-card">
+    <div class="result-top">
+      <div>
+        <div class="box-sub">Box found</div>
+        <div class="box-id" id="rc-boxid">BX-001</div>
+      </div>
+      <span class="badge badge-sold" id="rc-status">Sold</span>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>Species</label><span id="rc-species">—</span></div>
+      <div class="detail-item"><label>Weight</label><span id="rc-weight">—</span></div>
+      <div class="detail-item"><label>Grade</label><span id="rc-grade">—</span></div>
+      <div class="detail-item"><label>Lot no.</label><span id="rc-lot">—</span></div>
+      <div class="detail-item"><label>Vessel</label><span id="rc-vessel">—</span></div>
+      <div class="detail-item"><label>Price / kg</label><span id="rc-price">—</span></div>
+    </div>
+    <div class="buyer-section">
+      <div class="buyer-label">Buyer</div>
+      <div class="buyer-name" id="rc-buyer">—</div>
+      <div class="buyer-loc" id="rc-buyerloc">—</div>
+    </div>
+    <div style="font-size:12px; color:#6b7280; font-weight:600; margin-bottom:6px;">LABEL PREVIEW</div>
+    <div class="label-section">
+      <div class="label-header">
+        <span>BRIXHAM TRAWLER AGENTS</span>
+        <span id="lp-date">—</span>
+      </div>
+      <div class="label-body">
+        <div>
+          <div class="label-species" id="lp-species">—</div>
+          <div class="label-details" id="lp-details">—</div>
+          <div class="label-buyer" id="lp-buyer">—</div>
+        </div>
+        <div>
+          <div class="label-boxnum" id="lp-box">—</div>
+          <div class="label-lot" id="lp-lot">—</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-blue" onclick="printLabel()" id="print-btn">🖨️ Print label (Zebra)</button>
+    <button class="btn btn-grey" onclick="clearResult()" style="margin-top:6px;">↩ Scan next box</button>
+  </div>
+
+</div>
+
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+// ── Auction data (replace with real data or CSV import later) ──
+const AUCTION_DATA = {
+  "BX-001": { species:"Sole",      weight:"18kg", grade:"A",  lot:"L-2201", vessel:"Ocean Harvest",  priceKg:"£8.40",  buyer:"Plymouth Fish Co.",      buyerLoc:"Plymouth, Devon" },
+  "BX-002": { species:"Cod",       weight:"22kg", grade:"A",  lot:"L-2202", vessel:"Silver Fin",     priceKg:"£4.20",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
+  "BX-003": { species:"Plaice",    weight:"15kg", grade:"B",  lot:"L-2203", vessel:"Ocean Harvest",  priceKg:"£3.10",  buyer:"Torbay Fish Market",     buyerLoc:"Torquay, Devon" },
+  "BX-004": { species:"Haddock",   weight:"20kg", grade:"A",  lot:"L-2204", vessel:"Blue Wave",      priceKg:"£3.85",  buyer:"SW Fresh Fish Ltd",      buyerLoc:"Exeter, Devon" },
+  "BX-005": { species:"Turbot",    weight:"12kg", grade:"A+", lot:"L-2205", vessel:"Silver Fin",     priceKg:"£12.50", buyer:"The Fish Society",       buyerLoc:"London" },
+  "BX-006": { species:"Mackerel",  weight:"25kg", grade:"A",  lot:"L-2206", vessel:"Blue Wave",      priceKg:"£1.80",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
+  "BX-007": { species:"Lemon Sole",weight:"16kg", grade:"A",  lot:"L-2207", vessel:"Neptune's Pride",priceKg:"£6.20",  buyer:"Plymouth Fish Co.",      buyerLoc:"Plymouth, Devon" },
+  "BX-008": { species:"Sea Bass",  weight:"10kg", grade:"A+", lot:"L-2208", vessel:"Ocean Harvest",  priceKg:"£9.75",  buyer:"The Fish Society",       buyerLoc:"London" },
+  "BX-009": { species:"Monkfish",  weight:"14kg", grade:"A",  lot:"L-2209", vessel:"Silver Fin",     priceKg:"£7.30",  buyer:"SW Fresh Fish Ltd",      buyerLoc:"Exeter, Devon" },
+  "BX-010": { species:"Skate",     weight:"18kg", grade:"B",  lot:"L-2210", vessel:"Neptune's Pride",priceKg:"£2.40",  buyer:"Torbay Fish Market",     buyerLoc:"Torquay, Devon" },
+  "BX-011": { species:"Brill",     weight:"11kg", grade:"A",  lot:"L-2211", vessel:"Blue Wave",      priceKg:"£5.60",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
+  "BX-012": { species:"Red Mullet",weight:"8kg",  grade:"A+", lot:"L-2212", vessel:"Neptune's Pride",priceKg:"£10.20", buyer:"The Fish Society",       buyerLoc:"London" },
+};
+
+let stream = null, scanning = false, rafId = null, printed = 0;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas-el');
+const ctx = canvas.getContext('2d');
+
+// Build demo chips
+const chips = document.getElementById('demo-chips');
+Object.keys(AUCTION_DATA).forEach(id => {
+  const b = document.createElement('button');
+  b.className = 'demo-chip';
+  b.textContent = id;
+  b.onclick = () => showResult(id);
+  chips.appendChild(b);
+});
+
+function toggleCamera() {
+  if (stream) { stopCamera(); return; }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(s => {
+      stream = s;
+      video.srcObject = s;
+      video.style.display = 'block';
+      document.getElementById('cam-icon').style.display = 'none';
+      document.getElementById('cam-label').style.display = 'none';
+      document.getElementById('scanner-line').style.display = 'block';
+      document.getElementById('cam-btn').textContent = 'Stop camera';
+      document.getElementById('cam-btn').className = 'btn btn-red';
+      document.getElementById('scan-bar').classList.add('show');
+      scanning = true;
+      video.onloadedmetadata = () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; tick(); };
+    })
+    .catch(() => alert('Camera not available on this device/browser. Use the manual lookup or demo buttons instead.'));
+}
+
+function stopCamera() {
+  scanning = false;
+  if (rafId) cancelAnimationFrame(rafId);
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  video.style.display = 'none';
+  document.getElementById('cam-icon').style.display = '';
+  document.getElementById('cam-label').style.display = '';
+  document.getElementById('scanner-line').style.display = 'none';
+  document.getElementById('cam-btn').textContent = 'Start camera';
+  document.getElementById('cam-btn').className = 'btn btn-blue';
+  document.getElementById('scan-bar').classList.remove('show');
+}
+
+function tick() {
+  if (!scanning) return;
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(img.data, img.width, img.height);
+    if (code) { stopCamera(); showResult(code.data.trim().toUpperCase()); return; }
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+function manualLookup() {
+  const val = document.getElementById('manual-input').value.trim().toUpperCase();
+  if (val) showResult(val);
+}
+document.getElementById('manual-input').addEventListener('keydown', e => { if (e.key === 'Enter') manualLookup(); });
+
+function showResult(boxId) {
+  document.getElementById('error-box').classList.remove('show');
+  document.getElementById('result-card').classList.remove('show');
+  const box = AUCTION_DATA[boxId];
+  if (!box) { document.getElementById('error-box').classList.add('show'); return; }
+  const today = new Date().toLocaleDateString('en-GB');
+  document.getElementById('rc-boxid').textContent = boxId;
+  document.getElementById('rc-species').textContent = box.species;
+  document.getElementById('rc-weight').textContent = box.weight;
+  document.getElementById('rc-grade').textContent = box.grade;
+  document.getElementById('rc-lot').textContent = box.lot;
+  document.getElementById('rc-vessel').textContent = box.vessel;
+  document.getElementById('rc-price').textContent = box.priceKg;
+  document.getElementById('rc-buyer').textContent = box.buyer;
+  document.getElementById('rc-buyerloc').textContent = box.buyerLoc;
+  document.getElementById('lp-date').textContent = today;
+  document.getElementById('lp-species').textContent = box.species.toUpperCase();
+  document.getElementById('lp-details').textContent = box.weight + ' | Grade ' + box.grade + ' | ' + box.vessel + ' | ' + box.priceKg + '/kg';
+  document.getElementById('lp-buyer').textContent = box.buyer;
+  document.getElementById('lp-box').textContent = boxId;
+  document.getElementById('lp-lot').textContent = box.lot;
+  document.getElementById('result-card').classList.add('show');
+  document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function printLabel() {
+  const btn = document.getElementById('print-btn');
+  btn.textContent = '✅ Sent to Zebra printer!';
+  btn.className = 'btn btn-green';
+  btn.disabled = true;
+  printed++;
+  document.getElementById('stat-printed').textContent = printed;
+  document.getElementById('stat-pending').textContent = Math.max(0, 12 - printed);
+  setTimeout(() => {
+    btn.textContent = '🖨️ Print label (Zebra)';
+    btn.className = 'btn btn-blue';
+    btn.disabled = false;
+  }, 2500);
+}
+
+function clearResult() {
+  document.getElementById('result-card').classList.remove('show');
+  document.getElementById('error-box').classList.remove('show');
+  document.getElementById('manual-input').value = '';
+}
+</script>
+</body>
+</html>
