@@ -310,6 +310,7 @@
       </div>
     </div>
     <button class="btn btn-blue" onclick="printLabel()" id="t-print-btn">🖨️ Print label (Zebra)</button>
+    <button class="btn btn-orange" onclick="flagFromTicket()" style="margin-top:6px;">🚩 Flag this box</button>
     <button class="btn btn-grey" onclick="clearTicketResult()" style="margin-top:6px;">↩ Scan next box</button>
   </div>
 </div>
@@ -608,6 +609,13 @@ function printLabel() {
   setTimeout(() => { btn.textContent = '🖨️ Print label (Zebra)'; btn.className = 'btn btn-blue'; btn.disabled = false; }, 2500);
 }
 
+function flagFromTicket() {
+  const boxId = document.getElementById('t-boxid').textContent;
+  stopCamera('t');
+  goTo('flag-screen');
+  showFlagFound(boxId);
+}
+
 function clearTicketResult() {
   document.getElementById('t-result').classList.remove('show');
   document.getElementById('t-error').classList.remove('show');
@@ -681,10 +689,14 @@ function renderNotifications() {
       (flag.notes ? '<div class="notif-notes">' + flag.notes + '</div>' : '') +
       '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<span class="notif-by">Raised by: ' + flag.raisedBy + '</span>' +
-        (!flag.resolved ? '<button class="resolve-btn" onclick="resolveFlag(' + flag.id + ')">✓ Mark resolved</button>' : '<span style="font-size:11px;color:#16a34a;font-weight:600;">✓ Resolved</span>') +
+        (!flag.resolved ? (canResolve(flag) ? '<button class="resolve-btn" onclick="resolveFlag(' + flag.id + ')">✓ Mark resolved</button>' : '<span style="font-size:11px;color:#9ca3af;font-size:11px;">Only raiser, admin or auctioneer can resolve</span>') : '<span style="font-size:11px;color:#16a34a;font-weight:600;">✓ Resolved</span>') +
       '</div>';
     list.appendChild(div);
   });
+}
+
+function canResolve(flag) {
+  return currentUser === flag.raisedBy || currentRole === "Admin" || currentRole === "Auctioneer";
 }
 
 function resolveFlag(id) {
