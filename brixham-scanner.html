@@ -388,7 +388,7 @@ const DEMO_DATA={
   "BX-016":{species:"Red Mullet",weight:"8kg",grade:"A+",lot:"L-2211",vessel:"Neptunes Pride",priceKg:"£10.20",buyer:"The Fish Society",buyerLoc:"London"},
   "BX-017":{species:"Skate",weight:"18kg",grade:"B",lot:"L-2212",vessel:"Neptunes Pride",priceKg:"£2.40",buyer:"Torbay Fish Market",buyerLoc:"Torquay, Devon"}
 };
-let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set();
+let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set();
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
 function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0);if(id==="menu-screen")updateMenuStats();if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();}
 function doLogin(){const user=document.getElementById("li-user").value.trim().toLowerCase(),pass=document.getElementById("li-pass").value,err=document.getElementById("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");document.getElementById("menu-username").textContent=user;document.getElementById("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();goTo("menu-screen");}else{err.classList.add("show");document.getElementById("li-pass").value="";}}
@@ -396,7 +396,7 @@ function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f")
 document.getElementById("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("li-pass").focus();});
 function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;document.getElementById("ms-boxes").textContent=total;document.getElementById("ms-printed").textContent=printed;document.getElementById("ms-flags").textContent=flags.length;document.getElementById("t-total").textContent=total;document.getElementById("t-printed").textContent=printed;document.getElementById("t-pending").textContent=Math.max(0,total-printed);const nb=document.getElementById("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");}
-function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();const chips=document.getElementById("t-chips");chips.innerHTML="";Object.keys(AUCTION_DATA).forEach(id=>{const b=document.createElement("button");b.className="demo-chip";b.textContent=id;b.onclick=()=>showTicketResult(id);chips.appendChild(b);});updateMenuStats();}
+function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();ignoredBoxIds=new Set();const chips=document.getElementById("t-chips");chips.innerHTML="";Object.keys(AUCTION_DATA).forEach(id=>{const b=document.createElement("button");b.className="demo-chip";b.textContent=id;b.onclick=()=>showTicketResult(id);chips.appendChild(b);});updateMenuStats();}
 function toggleCamera(prefix){if(streams[prefix]){stopCamera(prefix);return;}const vid=document.getElementById(prefix+"-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{streams[prefix]=s;vid.srcObject=s;vid.style.display="block";document.getElementById(prefix+"-cam-icon").style.display="none";document.getElementById(prefix+"-cam-label").style.display="none";document.getElementById(prefix+"-scanner-line").style.display="block";document.getElementById(prefix+"-cam-btn").textContent="Stop camera";document.getElementById(prefix+"-cam-btn").className="btn btn-red";document.getElementById(prefix+"-scan-bar").classList.add("show");scannings[prefix]=true;const can=document.getElementById(prefix+"-canvas");vid.onloadedmetadata=()=>{can.width=vid.videoWidth;can.height=vid.videoHeight;tick(prefix);};}).catch(()=>alert("Camera not available. Use manual lookup instead."));}
 function stopCamera(prefix){scannings[prefix]=false;if(rafIds[prefix])cancelAnimationFrame(rafIds[prefix]);if(streams[prefix]){streams[prefix].getTracks().forEach(t=>t.stop());streams[prefix]=null;}const vid=document.getElementById(prefix+"-video");if(!vid)return;vid.style.display="none";document.getElementById(prefix+"-cam-icon").style.display="";document.getElementById(prefix+"-cam-label").style.display="";document.getElementById(prefix+"-scanner-line").style.display="none";document.getElementById(prefix+"-cam-btn").textContent="Start camera";document.getElementById(prefix+"-cam-btn").className="btn btn-blue";document.getElementById(prefix+"-scan-bar").classList.remove("show");}
 function tick(prefix){if(!scannings[prefix])return;const vid=document.getElementById(prefix+"-video"),can=document.getElementById(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}rafIds[prefix]=requestAnimationFrame(()=>tick(prefix));}
@@ -572,6 +572,14 @@ function printConsolidated(btn,data){
     const boxes=data.boxes.split(",");
     boxes.forEach(id=>printedBoxIds.add(id));
     printedTicketKeys.add(ticketKey);
+    // Also sync: mark all OTHER boxes in same group+buyer as printed
+    // since they share the same consolidated label
+    const firstBox=AUCTION_DATA[boxes[0]];
+    if(firstBox&&firstBox.groupId){
+      Object.entries(AUCTION_DATA).filter(([id,b])=>
+        b.groupId===firstBox.groupId&&b.buyer===data.buyer
+      ).forEach(([id])=>printedBoxIds.add(id));
+    }
     printed=printedBoxIds.size;
     updateMenuStats();
   }
@@ -600,7 +608,13 @@ function printAll(){
   });
   const ticketCount=ticketKeys.size;
   const groupKey="group_"+box.groupId;
-  if(!printedBoxIds.has(groupKey)){printedBoxIds.add(groupKey);printed++;updateMenuStats();}
+  if(!printedBoxIds.has(groupKey)){
+    printedBoxIds.add(groupKey);
+    // Mark all boxes in this group as printed
+    groupBoxes.forEach(([id])=>printedBoxIds.add(id));
+    printed=printedBoxIds.size;
+    updateMenuStats();
+  }
   // Update top button to Printing... then Reprint all labels
   const topBtn=document.getElementById("t-print-btn");
   topBtn.textContent="Printing...";
@@ -743,7 +757,10 @@ function submitFlag(){
   const displayBoxId=affectedBoxIds.length>1?affectedBoxIds.join(", "):affectedBoxIds[0];
   const buyerInfo=selectedFlagBuyer?" — Buyer: "+selectedFlagBuyer:"";
   const fullNotes=notes&&buyerInfo?notes+" | "+buyerInfo.trim():notes||buyerInfo.trim()||"";
-  flags.push({id:Date.now(),boxId:displayBoxId,issue:selectedIssue,notes:fullNotes,photo:capturedPhotoData,raisedBy:currentUser,time:timeStr,resolved:false,flagBuyer:selectedFlagBuyer,affectedBoxIds:affectedBoxIds});
+  // Snapshot box data so notifications can show it even if box is later removed
+  const flaggedBox=AUCTION_DATA[affectedBoxIds[0]]||null;
+  const boxSnapshot=flaggedBox?{species:flaggedBox.species,weight:flaggedBox.weight,grade:flaggedBox.grade,vessel:flaggedBox.vessel,buyer:selectedFlagBuyer||flaggedBox.buyer,buyerLoc:flaggedBox.buyerLoc,lot:flaggedBox.lot,priceKg:flaggedBox.priceKg}:null;
+  flags.push({id:Date.now(),boxId:displayBoxId,issue:selectedIssue,notes:fullNotes,photo:capturedPhotoData,raisedBy:currentUser,time:timeStr,resolved:false,flagBuyer:selectedFlagBuyer,affectedBoxIds:affectedBoxIds,boxSnapshot});
   affectedBoxIds.forEach(id=>{
     flaggedBoxIds.add(id);
     if(!printedBoxIds.has(id)){printedBoxIds.add(id);printed=printedBoxIds.size;}
@@ -758,23 +775,35 @@ function submitFlag(){
   modal.style.display="flex";
   modal.dataset.boxid=affectedBoxIds[0];
   modal.dataset.allboxids=affectedBoxIds.join(",");
+  modal.dataset.returnboxid=actualFlagBoxId;
   document.getElementById("f-manual").value="";capturedPhotoData=null;
 }
 
+function returnToBoxInfo(){
+  const returnId=document.getElementById("flag-modal-overlay").dataset.returnboxid;
+  if(returnId){goTo("ticket-screen");showTicketResult(returnId);}
+}
+
 function flagModalIgnore(){
-  // Mark box as printed/done without printing - counts toward total
-  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
-  // Already counted in submitFlag, just close
   document.getElementById("flag-modal-overlay").style.display="none";
-  document.getElementById("f-success").classList.add("show");
-  document.getElementById("f-success-msg").textContent="Ticket ignored — box marked as done and counted.";
+  returnToBoxInfo();
+}
+
+function flagModalRemove(){
+  const allBoxIds=(document.getElementById("flag-modal-overlay").dataset.allboxids||document.getElementById("flag-modal-overlay").dataset.boxid||"").split(",").filter(Boolean);
+  allBoxIds.forEach(id=>{
+    flaggedBoxIds.add(id); // grey out print button
+    ignoredBoxIds.add(id); // mark as ignored - no label needed
+    if(!printedBoxIds.has(id)){printedBoxIds.add(id);printed=printedBoxIds.size;}
+  });
+  updateMenuStats();
+  document.getElementById("flag-modal-overlay").style.display="none";
+  returnToBoxInfo();
 }
 
 function flagModalKeep(){
-  // Keep ticket - operator will print label separately, dont count yet
   document.getElementById("flag-modal-overlay").style.display="none";
-  document.getElementById("f-success").classList.add("show");
-  document.getElementById("f-success-msg").textContent="Ticket kept — you can still print the label from Start ticketing.";
+  returnToBoxInfo();
 }
 
 function flagModalDismiss(){
@@ -796,7 +825,7 @@ function renderNotifications(){
   if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}
   list.innerHTML="";
   [...flags].reverse().forEach(flag=>{
-    const box=AUCTION_DATA[flag.boxId];
+    const box=AUCTION_DATA[flag.affectedBoxIds&&flag.affectedBoxIds[0]]||AUCTION_DATA[flag.boxId]||flag.boxSnapshot||null;
     const div=document.createElement("div");
     const isSupply=flag.isSupply||false;
     const icon=isSupply?"&#128031;":"&#128681;";
@@ -965,9 +994,7 @@ function printCustomTicket(){
   err.style.display="none";
   // Box already counted when flag was submitted - no need to count again
   closeCustomTicket();
-  // Show success
-  document.getElementById("f-success").classList.add("show");
-  document.getElementById("f-success-msg").textContent="Custom issue ticket printed for "+buyer+". Auctioneer has been notified.";
+  returnToBoxInfo();
 }
 
 function closeCustomTicket(){
@@ -1145,8 +1172,8 @@ function previewConsolidatedLabel(data){
     <div style="font-size:16px;font-weight:700;color:#111827;text-align:center;margin-bottom:6px;">Flag submitted</div>
     <div style="font-size:13px;color:#6b7280;text-align:center;margin-bottom:1.5rem;line-height:1.5;" id="flag-modal-msg">The auctioneer has been notified.</div>
     <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">What would you like to do with this ticket?</div>
-    <button onclick="flagModalIgnore()" style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
-      &#10060; Ignore ticket — box doesn't need a label
+    <button onclick="flagModalRemove()" style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      &#10060; Ignore box — counted, no label needed
     </button>
     <button onclick="flagModalKeep()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
       &#127991;&#65039; Keep ticket — still print a label
