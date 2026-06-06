@@ -288,7 +288,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
       <span class="badge badge-flagged">&#9888;&#65039; Flagging</span>
     </div>
     <div id="f-buyer-section" style="display:none;margin-bottom:1rem;">
-      <label class="flag-label">Which buyer has the problem?</label>
+      <label class="flag-label">Select the specific box with the problem:</label>
       <div id="f-buyer-list" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
     <label class="flag-label">Select problem type</label>
@@ -688,8 +688,9 @@ function showFlagFound(boxId){
   if(!box){document.getElementById("f-error").classList.add("show");return;}
   document.getElementById("f-boxid").textContent=boxId;
   document.getElementById("f-actual-boxid").value=boxId;
+  const actualFlagBoxId=boxId;
   document.getElementById("f-boxname").textContent=box.species+" - "+box.weight+" - "+box.vessel;
-  selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;
+  selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;selectedFlagBuyerBoxes=[];
   document.querySelectorAll(".issue-btn").forEach(b=>b.classList.remove("selected"));
   document.getElementById("f-notes").value="";
   // If grouped box, show buyer selector
@@ -701,30 +702,23 @@ function showFlagFound(boxId){
     const wCounts={};
     groupBoxes.forEach(([id,b])=>{wCounts[b.weight]=(wCounts[b.weight]||0)+1;});
     const fullW=Object.entries(wCounts).sort((a,b)=>b[1]-a[1])[0][0];
-    // Build buyer+ticket map same as ticketing page
-    const ticketMap={};
-    groupBoxes.forEach(([id,b])=>{
-      const isPart=b.weight!==fullW;
-      const key=isPart?id+"__part":b.buyer+"__full";
-      if(!ticketMap[key])ticketMap[key]={buyer:b.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,isPart};
-      ticketMap[key].boxes.push(id);
-      ticketMap[key].totalKg+=parseFloat(b.weight.replace(/[^0-9.]/g,""))||0;
-    });
+    // Show each physical box individually
     buyerList.innerHTML="";
-    Object.values(ticketMap).forEach(entry=>{
+    groupBoxes.sort((a,b)=>a[0].localeCompare(b[0])).forEach(([id,b])=>{
+      const isPart=b.weight!==fullW;
       const btn=document.createElement("button");
-      const count=entry.boxes.length;
-      const partTag=entry.isPart?" (part box)":"";
-      const label=count>1?count+" boxes - "+entry.totalKg+"kg":entry.boxes[0]+" - "+entry.totalKg+"kg";
-      btn.style.cssText="width:100%;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;background:white;font-size:13px;font-weight:600;color:#374151;cursor:pointer;text-align:left;transition:all .15s;";
-      btn.innerHTML="<div style='color:#0C447C;'>"+entry.buyer+partTag+"</div><div style='font-size:12px;color:#6b7280;font-weight:400;'>"+label+"</div>";
-      btn.dataset.buyer=entry.buyer;
-      btn.dataset.buyerloc=entry.buyerLoc;
+      const partTag=isPart?' <span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:10px;font-weight:600;">PART BOX</span>':"";
+      btn.style.cssText="width:100%;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;background:white;font-size:13px;font-weight:600;color:#374151;cursor:pointer;text-align:left;transition:all .15s;margin-bottom:4px;";
+      btn.innerHTML="<div style='display:flex;justify-content:space-between;align-items:center;'><span style='color:#0C447C;font-weight:700;'>"+id+"</span>"+partTag+"</div><div style='font-size:12px;color:#6b7280;font-weight:400;margin-top:2px;'>"+b.buyer+" — "+b.weight+"</div>";
+      btn.dataset.buyer=b.buyer;
+      btn.dataset.buyerloc=b.buyerLoc;
+      btn.dataset.boxes=id;
       btn.onclick=function(){
-        buyerList.querySelectorAll("button").forEach(b=>{b.style.borderColor="#e5e7eb";b.style.background="white";});
+        buyerList.querySelectorAll("button").forEach(bt=>{bt.style.borderColor="#e5e7eb";bt.style.background="white";});
         this.style.borderColor="#dc2626";this.style.background="#fff5f5";
         selectedFlagBuyer=this.dataset.buyer;
         selectedFlagBuyerLoc=this.dataset.buyerloc;
+        selectedFlagBuyerBoxes=[this.dataset.boxes];
       };
       buyerList.appendChild(btn);
     });
@@ -733,6 +727,7 @@ function showFlagFound(boxId){
     buyerSection.style.display="none";
     selectedFlagBuyer=box.buyer;
     selectedFlagBuyerLoc=box.buyerLoc;
+    selectedFlagBuyerBoxes=[actualFlagBoxId||boxId];
   }
   document.getElementById("f-found").classList.add("show");
   document.getElementById("f-found").scrollIntoView({behavior:"smooth",block:"start"});
@@ -743,31 +738,33 @@ function submitFlag(){
   const box=AUCTION_DATA[actualFlagBoxId];
   if(box&&box.groupId&&!selectedFlagBuyer){alert("Please select which buyer has the problem.");return;}
   if(!selectedIssue){alert("Please select a problem type.");return;}
-  const boxId=actualFlagBoxId,notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  const notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  const affectedBoxIds=selectedFlagBuyerBoxes.length>0?selectedFlagBuyerBoxes:[actualFlagBoxId];
+  const displayBoxId=affectedBoxIds.length>1?affectedBoxIds.join(", "):affectedBoxIds[0];
   const buyerInfo=selectedFlagBuyer?" — Buyer: "+selectedFlagBuyer:"";
-  const fullNotes=notes&&buyerInfo?notes+" | "+buyerInfo.trim():notes||buyerInfo.trim()||"";  flags.push({id:Date.now(),boxId,issue:selectedIssue,notes:fullNotes,photo:capturedPhotoData,raisedBy:currentUser,time:timeStr,resolved:false,flagBuyer:selectedFlagBuyer});
-  // Count this box as handled and mark as flagged
-  if(boxId){
-    flaggedBoxIds.add(boxId);
-    if(!printedBoxIds.has(boxId)){
-      printedBoxIds.add(boxId);
-      printed=printedBoxIds.size;
-    }
-  }
+  const fullNotes=notes&&buyerInfo?notes+" | "+buyerInfo.trim():notes||buyerInfo.trim()||"";
+  flags.push({id:Date.now(),boxId:displayBoxId,issue:selectedIssue,notes:fullNotes,photo:capturedPhotoData,raisedBy:currentUser,time:timeStr,resolved:false,flagBuyer:selectedFlagBuyer,affectedBoxIds:affectedBoxIds});
+  affectedBoxIds.forEach(id=>{
+    flaggedBoxIds.add(id);
+    if(!printedBoxIds.has(id)){printedBoxIds.add(id);printed=printedBoxIds.size;}
+  });
+
+
   updateMenuStats();
   document.getElementById("f-found").classList.remove("show");
   // Show modal asking what to do with the ticket
   const modal=document.getElementById("flag-modal-overlay");
-  document.getElementById("flag-modal-msg").textContent="Box "+boxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
+  document.getElementById("flag-modal-msg").textContent="Box "+displayBoxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
   modal.style.display="flex";
-  modal.dataset.boxid=boxId;
+  modal.dataset.boxid=affectedBoxIds[0];
+  modal.dataset.allboxids=affectedBoxIds.join(",");
   document.getElementById("f-manual").value="";capturedPhotoData=null;
 }
 
 function flagModalIgnore(){
   // Mark box as printed/done without printing - counts toward total
   const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
-  updateMenuStats();
+  // Already counted in submitFlag, just close
   document.getElementById("flag-modal-overlay").style.display="none";
   document.getElementById("f-success").classList.add("show");
   document.getElementById("f-success-msg").textContent="Ticket ignored — box marked as done and counted.";
@@ -966,13 +963,7 @@ function printCustomTicket(){
   const err=document.getElementById("ct-error");
   if(!vessel||!weight||!grade||!buyer){err.style.display="block";return;}
   err.style.display="none";
-  // Count toward printed total
-  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
-  if(boxId&&!printedBoxIds.has("custom_"+boxId)){
-    printedBoxIds.add("custom_"+boxId);
-    printed=printedBoxIds.size;
-    updateMenuStats();
-  }
+  // Box already counted when flag was submitted - no need to count again
   closeCustomTicket();
   // Show success
   document.getElementById("f-success").classList.add("show");
