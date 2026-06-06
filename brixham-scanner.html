@@ -282,6 +282,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
   </div>
   <div class="flag-error-box" id="f-error">&#9888;&#65039; Box not found. Check the ID and try again.</div>
   <div class="flag-found" id="f-found">
+    <input type="hidden" id="f-actual-boxid" value=""/>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #f3f4f6;">
       <div><div class="box-sub">Box to flag</div><div class="flag-box-id" id="f-boxid">-</div><div class="flag-box-name" id="f-boxname">-</div></div>
       <span class="badge badge-flagged">&#9888;&#65039; Flagging</span>
@@ -297,6 +298,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
       <button class="issue-btn" onclick="selectIssue(this,'Weight discrepancy')"><span class="issue-icon">&#9878;&#65039;</span>Weight discrepancy</button>
       <button class="issue-btn" onclick="selectIssue(this,'Missing QR code')"><span class="issue-icon">&#9634;&#65039;</span>Missing QR code</button>
       <button class="issue-btn" onclick="selectIssue(this,'Wrong grade')"><span class="issue-icon">&#127991;&#65039;</span>Wrong grade</button>
+      <button class="issue-btn" onclick="selectIssue(this,'Wrong size')"><span class="issue-icon">&#128208;</span>Wrong size</button>
       <button class="issue-btn" onclick="selectIssue(this,'Box does not exist')" style="border-color:#7c3aed;"><span class="issue-icon">&#10060;</span>Box doesn't exist</button>
     </div>
     <label class="flag-label" for="f-notes">Additional notes (optional)</label>
@@ -336,7 +338,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div class="header-right"><button class="back-btn" onclick="goTo('menu-screen')">&#8592; Menu</button><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
   <div style="background:white;border-radius:14px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,0.07);">
-    <div class="notif-header-row"><h2>&#128276; Flag reports</h2><button class="clear-btn" onclick="clearResolved()">Clear resolved</button></div>
+    <div class="notif-header-row"><h2>&#128276; Flag reports</h2><button class="clear-btn" id="clear-resolved-btn" onclick="clearResolved()" style="display:none;">Clear resolved</button></div>
     <div id="notif-list"><div class="notif-empty">No flags raised yet today.</div></div>
   </div>
 </div></div>
@@ -366,7 +368,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 
 <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
-const STAFF={"admin":{pass:"brixham2026",role:"Admin"},"operator1":{pass:"fish123",role:"Operator"},"operator2":{pass:"fish123",role:"Operator"},"manager":{pass:"market2026",role:"Manager"},"auctioneer":{pass:"auction2026",role:"Auctioneer"}};
+const STAFF={"admin":{pass:"brixham2026",role:"Admin"},"operator1":{pass:"fish123",role:"Operator"},"operator2":{pass:"fish123",role:"Operator"},"manager":{pass:"market2026",role:"Manager"},"auctioneer":{pass:"auction2026",role:"Auctioneer"},"1":{pass:"1",role:"Operator"}};
 const DEMO_DATA={
   "BX-001":{species:"Sole",weight:"30kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon",groupId:"G-001"},
   "BX-002":{species:"Sole",weight:"30kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon",groupId:"G-001"},
@@ -386,15 +388,15 @@ const DEMO_DATA={
   "BX-016":{species:"Red Mullet",weight:"8kg",grade:"A+",lot:"L-2211",vessel:"Neptunes Pride",priceKg:"£10.20",buyer:"The Fish Society",buyerLoc:"London"},
   "BX-017":{species:"Skate",weight:"18kg",grade:"B",lot:"L-2212",vessel:"Neptunes Pride",priceKg:"£2.40",buyer:"Torbay Fish Market",buyerLoc:"Torquay, Devon"}
 };
-let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set();
+let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set();
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
 function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0);if(id==="menu-screen")updateMenuStats();if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();}
-function doLogin(){const user=document.getElementById("li-user").value.trim().toLowerCase(),pass=document.getElementById("li-pass").value,err=document.getElementById("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");document.getElementById("menu-username").textContent=user;document.getElementById("menu-role-label").textContent=currentRole;rebuildChips();goTo("menu-screen");}else{err.classList.add("show");document.getElementById("li-pass").value="";}}
+function doLogin(){const user=document.getElementById("li-user").value.trim().toLowerCase(),pass=document.getElementById("li-pass").value,err=document.getElementById("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");document.getElementById("menu-username").textContent=user;document.getElementById("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();goTo("menu-screen");}else{err.classList.add("show");document.getElementById("li-pass").value="";}}
 function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();document.getElementById("li-user").value="";document.getElementById("li-pass").value="";document.getElementById("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById("login-screen").classList.add("active");}
 document.getElementById("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("li-pass").focus();});
 function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;document.getElementById("ms-boxes").textContent=total;document.getElementById("ms-printed").textContent=printed;document.getElementById("ms-flags").textContent=flags.length;document.getElementById("t-total").textContent=total;document.getElementById("t-printed").textContent=printed;document.getElementById("t-pending").textContent=Math.max(0,total-printed);const nb=document.getElementById("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");}
-function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();const chips=document.getElementById("t-chips");chips.innerHTML="";Object.keys(AUCTION_DATA).forEach(id=>{const b=document.createElement("button");b.className="demo-chip";b.textContent=id;b.onclick=()=>showTicketResult(id);chips.appendChild(b);});updateMenuStats();}
+function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();const chips=document.getElementById("t-chips");chips.innerHTML="";Object.keys(AUCTION_DATA).forEach(id=>{const b=document.createElement("button");b.className="demo-chip";b.textContent=id;b.onclick=()=>showTicketResult(id);chips.appendChild(b);});updateMenuStats();}
 function toggleCamera(prefix){if(streams[prefix]){stopCamera(prefix);return;}const vid=document.getElementById(prefix+"-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{streams[prefix]=s;vid.srcObject=s;vid.style.display="block";document.getElementById(prefix+"-cam-icon").style.display="none";document.getElementById(prefix+"-cam-label").style.display="none";document.getElementById(prefix+"-scanner-line").style.display="block";document.getElementById(prefix+"-cam-btn").textContent="Stop camera";document.getElementById(prefix+"-cam-btn").className="btn btn-red";document.getElementById(prefix+"-scan-bar").classList.add("show");scannings[prefix]=true;const can=document.getElementById(prefix+"-canvas");vid.onloadedmetadata=()=>{can.width=vid.videoWidth;can.height=vid.videoHeight;tick(prefix);};}).catch(()=>alert("Camera not available. Use manual lookup instead."));}
 function stopCamera(prefix){scannings[prefix]=false;if(rafIds[prefix])cancelAnimationFrame(rafIds[prefix]);if(streams[prefix]){streams[prefix].getTracks().forEach(t=>t.stop());streams[prefix]=null;}const vid=document.getElementById(prefix+"-video");if(!vid)return;vid.style.display="none";document.getElementById(prefix+"-cam-icon").style.display="";document.getElementById(prefix+"-cam-label").style.display="";document.getElementById(prefix+"-scanner-line").style.display="none";document.getElementById(prefix+"-cam-btn").textContent="Start camera";document.getElementById(prefix+"-cam-btn").className="btn btn-blue";document.getElementById(prefix+"-scan-bar").classList.remove("show");}
 function tick(prefix){if(!scannings[prefix])return;const vid=document.getElementById(prefix+"-video"),can=document.getElementById(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}rafIds[prefix]=requestAnimationFrame(()=>tick(prefix));}
@@ -428,7 +430,8 @@ function showTicketResult(boxId){
     document.getElementById("t-grade").textContent=box.grade;
     document.getElementById("t-lot").textContent=box.lot;
     document.getElementById("t-vessel").textContent=box.vessel;
-    document.getElementById("t-buyer").textContent=groupBoxes.length+" buyers (see below)";
+    const uniqueBuyerCount=new Set(groupBoxes.map(([id,b])=>b.buyer)).size;
+    document.getElementById("t-buyer").textContent=uniqueBuyerCount+" buyer"+(uniqueBuyerCount>1?"s":"")+" (see below)";
     document.getElementById("t-buyerloc").textContent="";
   } else {
     document.getElementById("t-boxid").textContent=boxId;
@@ -450,8 +453,10 @@ function showTicketResult(boxId){
   const groupSection=document.getElementById("t-group-section");
   const groupList=document.getElementById("t-group-list");
   const printBtn=document.getElementById("t-print-btn");
+  const actualId=document.getElementById("t-actual-boxid").value||boxId;
   if(box.groupId){
-    printBtn.textContent="Print all labels";
+    const groupKey="group_"+box.groupId;
+    printBtn.textContent=printedBoxIds.has(groupKey)?"Reprint all labels":"Print all labels";
     printBtn.onclick=printAll;
     const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
     groupList.innerHTML="";
@@ -501,14 +506,47 @@ function showTicketResult(boxId){
       printBtn.dataset.boxes=entry.boxes.join(",");
       printBtn.dataset.ispart=entry.isPart?"1":"0";
       printBtn.onclick=function(){printConsolidated(this,this.dataset);};
+      // Check if flagged
+      const anyFlagged=entry.boxes.some(id=>flaggedBoxIds.has(id));
+      const ticketKey=entry.buyer+"__"+entry.boxes.join(",");
+      const groupAllKey="group_"+(AUCTION_DATA[entry.boxes[0]]||{}).groupId;
+      if(anyFlagged){
+        printBtn.textContent="Flagged";
+        printBtn.style.background="#9ca3af";
+        printBtn.style.cursor="not-allowed";
+        printBtn.disabled=true;
+        printBtn.onclick=null;
+      } else if(printedTicketKeys.has(ticketKey)||printedBoxIds.has(groupAllKey)){
+        printBtn.textContent="Reprint";
+      }
+      // Clicking anywhere on the row (not the button) updates label preview
+      row.style.cursor="pointer";
+      row.onclick=function(e){
+        if(e.target===printBtn)return;
+        previewConsolidatedLabel(this.querySelector("button").dataset);
+        // Highlight selected row
+        document.querySelectorAll("#t-group-list > div").forEach(r=>r.style.background="white");
+        this.style.background="#eff6ff";
+      };
       row.appendChild(nameDiv);row.appendChild(printBtn);
       groupList.appendChild(row);
     });
     groupSection.style.display="block";
   } else {
     groupSection.style.display="none";
-    printBtn.textContent="Print label";
-    printBtn.onclick=printLabel;
+    if(flaggedBoxIds.has(boxId)){
+      printBtn.textContent="Flagged";
+      printBtn.style.background="#9ca3af";
+      printBtn.style.cursor="not-allowed";
+      printBtn.disabled=true;
+      printBtn.onclick=null;
+    } else {
+      printBtn.textContent=printedBoxIds.has(boxId)?"Reprint label":"Print label";
+      printBtn.style.background="";
+      printBtn.style.cursor="";
+      printBtn.disabled=false;
+      printBtn.onclick=printLabel;
+    }
   }
   document.getElementById("t-result").classList.add("show");
   document.getElementById("t-result").scrollIntoView({behavior:"smooth",block:"start"});
@@ -548,29 +586,30 @@ function printConsolidated(btn,data){
 }
 
 function printAll(){
-  const boxId=document.getElementById("t-boxid").textContent;
-  const box=AUCTION_DATA[boxId];
+  const actualBoxId=document.getElementById("t-actual-boxid").value;
+  const box=AUCTION_DATA[actualBoxId];
   if(!box||!box.groupId)return;
   const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
-  // Find full box weight (most common)
   const weightCounts={};
   groupBoxes.forEach(([id,b])=>{weightCounts[b.weight]=(weightCounts[b.weight]||0)+1;});
   const fullBoxWeight=Object.entries(weightCounts).sort((a,b)=>b[1]-a[1])[0][0];
-  // Count tickets: one per buyer for full boxes + one per part box
   const ticketKeys=new Set();
   groupBoxes.forEach(([id,b])=>{
     const isFullBox=b.weight===fullBoxWeight;
     ticketKeys.add(isFullBox?b.buyer+"__full":id+"__part");
   });
   const ticketCount=ticketKeys.size;
-  // Only count boxes not already printed
-  // Track group lots printed separately - dont mark individual boxes as printed
   const groupKey="group_"+box.groupId;
   if(!printedBoxIds.has(groupKey)){printedBoxIds.add(groupKey);printed++;updateMenuStats();}
-  updateMenuStats();
+  // Update top button to Printing... then Reprint all labels
   const topBtn=document.getElementById("t-print-btn");
-  topBtn.textContent=ticketCount+" label"+(ticketCount>1?"s":"")+" sent!";
+  topBtn.textContent="Printing...";
   topBtn.className="btn btn-green";topBtn.disabled=true;
+  // Change all individual Print buttons in the group list to Reprint
+  document.querySelectorAll("#t-group-list button").forEach(btn=>{
+    btn.textContent="Reprint";
+    btn.style.background="#185FA5";
+  });
   setTimeout(()=>{topBtn.textContent="Reprint all labels";topBtn.className="btn btn-blue";topBtn.disabled=false;},2500);
 }
 
@@ -648,6 +687,7 @@ function showFlagFound(boxId){
   const box=AUCTION_DATA[boxId];
   if(!box){document.getElementById("f-error").classList.add("show");return;}
   document.getElementById("f-boxid").textContent=boxId;
+  document.getElementById("f-actual-boxid").value=boxId;
   document.getElementById("f-boxname").textContent=box.species+" - "+box.weight+" - "+box.vessel;
   selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;
   document.querySelectorAll(".issue-btn").forEach(b=>b.classList.remove("selected"));
@@ -699,17 +739,51 @@ function showFlagFound(boxId){
 }
 function selectIssue(btn,issue){document.querySelectorAll(".issue-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");selectedIssue=issue;}
 function submitFlag(){
-  const box=AUCTION_DATA[document.getElementById("f-boxid").textContent];
+  const actualFlagBoxId=document.getElementById("f-actual-boxid").value||document.getElementById("f-boxid").textContent;
+  const box=AUCTION_DATA[actualFlagBoxId];
   if(box&&box.groupId&&!selectedFlagBuyer){alert("Please select which buyer has the problem.");return;}
   if(!selectedIssue){alert("Please select a problem type.");return;}
-  const boxId=document.getElementById("f-boxid").textContent,notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  const boxId=actualFlagBoxId,notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   const buyerInfo=selectedFlagBuyer?" — Buyer: "+selectedFlagBuyer:"";
   const fullNotes=notes&&buyerInfo?notes+" | "+buyerInfo.trim():notes||buyerInfo.trim()||"";  flags.push({id:Date.now(),boxId,issue:selectedIssue,notes:fullNotes,photo:capturedPhotoData,raisedBy:currentUser,time:timeStr,resolved:false,flagBuyer:selectedFlagBuyer});
+  // Count this box as handled and mark as flagged
+  if(boxId){
+    flaggedBoxIds.add(boxId);
+    if(!printedBoxIds.has(boxId)){
+      printedBoxIds.add(boxId);
+      printed=printedBoxIds.size;
+    }
+  }
   updateMenuStats();
   document.getElementById("f-found").classList.remove("show");
-  document.getElementById("f-success").classList.add("show");
-  document.getElementById("f-success-msg").textContent="Box "+boxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
+  // Show modal asking what to do with the ticket
+  const modal=document.getElementById("flag-modal-overlay");
+  document.getElementById("flag-modal-msg").textContent="Box "+boxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
+  modal.style.display="flex";
+  modal.dataset.boxid=boxId;
   document.getElementById("f-manual").value="";capturedPhotoData=null;
+}
+
+function flagModalIgnore(){
+  // Mark box as printed/done without printing - counts toward total
+  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
+  updateMenuStats();
+  document.getElementById("flag-modal-overlay").style.display="none";
+  document.getElementById("f-success").classList.add("show");
+  document.getElementById("f-success-msg").textContent="Ticket ignored — box marked as done and counted.";
+}
+
+function flagModalKeep(){
+  // Keep ticket - operator will print label separately, dont count yet
+  document.getElementById("flag-modal-overlay").style.display="none";
+  document.getElementById("f-success").classList.add("show");
+  document.getElementById("f-success-msg").textContent="Ticket kept — you can still print the label from Start ticketing.";
+}
+
+function flagModalDismiss(){
+  // Go back to the flag form
+  document.getElementById("flag-modal-overlay").style.display="none";
+  document.getElementById("f-found").classList.add("show");
 }
 function clearFlagForm(){document.getElementById("f-found").classList.remove("show");document.getElementById("f-error").classList.remove("show");document.getElementById("f-success").classList.remove("show");document.getElementById("f-manual").value="";selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;document.getElementById("f-buyer-section").style.display="none";document.getElementById("f-buyer-list").innerHTML="";stopPhotoCamera();capturedPhotoData=null;document.getElementById("f-photo-preview").style.display="none";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="";document.getElementById("f-photo-btn").style.display="block";document.getElementById("f-photo-btn").textContent="Open camera";document.getElementById("f-photo-btn").className="btn btn-grey";document.getElementById("f-capture-btn").style.display="none";}
 function togglePhotoCamera(){if(photoStream){stopPhotoCamera();return;}const vid=document.getElementById("f-photo-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{photoStream=s;vid.srcObject=s;vid.style.display="block";document.getElementById("f-photo-icon").style.display="none";document.getElementById("f-photo-label").style.display="none";document.getElementById("f-photo-btn").textContent="✕ Close camera";document.getElementById("f-photo-btn").className="btn btn-red";document.getElementById("f-capture-btn").style.display="block";}).catch(()=>alert("Camera not available."));}
@@ -720,6 +794,8 @@ function canResolve(flag){return currentUser===flag.raisedBy||currentRole==="Adm
 function toggleNotif(id){const detail=document.getElementById('nd-'+id),chev=document.getElementById('nc-'+id);if(detail){detail.classList.toggle('open');chev.classList.toggle('open');}}
 function renderNotifications(){
   const list=document.getElementById("notif-list");
+  const clearBtn=document.getElementById("clear-resolved-btn");
+  if(clearBtn)clearBtn.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
   if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}
   list.innerHTML="";
   [...flags].reverse().forEach(flag=>{
@@ -844,6 +920,86 @@ function clearSupplyForm(){
   document.getElementById('s-photo-btn').className='btn btn-grey';
   document.getElementById('s-capture-btn').style.display='none';
 }
+
+
+function flagModalCustom(){
+  // Hide the flag modal and show custom ticket builder
+  document.getElementById("flag-modal-overlay").style.display="none";
+  const overlay=document.getElementById("custom-ticket-overlay");
+  // Pre-fill from box data if available
+  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
+  const box=AUCTION_DATA[boxId];
+  if(box){
+    document.getElementById("ct-vessel").value=box.vessel||"";
+    document.getElementById("ct-weight").value=box.weight||"";
+    document.getElementById("ct-grade").value=box.grade||"";
+    document.getElementById("ct-buyer").value=selectedFlagBuyer||box.buyer||"";
+  }
+  document.getElementById("ct-date").textContent=new Date().toLocaleDateString("en-GB");
+  document.getElementById("ct-prev-boxid").textContent=boxId||"—";
+  updateCustomPreview();
+  overlay.style.display="flex";
+}
+
+function updateCustomPreview(){
+  const vessel=document.getElementById("ct-vessel").value||"—";
+  const weight=document.getElementById("ct-weight").value||"—";
+  const grade=document.getElementById("ct-grade").value||"—";
+  const buyer=document.getElementById("ct-buyer").value||"—";
+  document.getElementById("ct-prev-details").textContent=weight+" | Grade "+grade+" | "+vessel;
+  document.getElementById("ct-prev-buyer").textContent=buyer;
+}
+
+// Live preview updates - called after DOM is ready
+function initCustomTicketListeners(){
+  ["ct-vessel","ct-weight","ct-grade","ct-buyer"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener("input", updateCustomPreview);
+  });
+}
+
+function printCustomTicket(){
+  const vessel=document.getElementById("ct-vessel").value.trim();
+  const weight=document.getElementById("ct-weight").value.trim();
+  const grade=document.getElementById("ct-grade").value.trim();
+  const buyer=document.getElementById("ct-buyer").value.trim();
+  const err=document.getElementById("ct-error");
+  if(!vessel||!weight||!grade||!buyer){err.style.display="block";return;}
+  err.style.display="none";
+  // Count toward printed total
+  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
+  if(boxId&&!printedBoxIds.has("custom_"+boxId)){
+    printedBoxIds.add("custom_"+boxId);
+    printed=printedBoxIds.size;
+    updateMenuStats();
+  }
+  closeCustomTicket();
+  // Show success
+  document.getElementById("f-success").classList.add("show");
+  document.getElementById("f-success-msg").textContent="Custom issue ticket printed for "+buyer+". Auctioneer has been notified.";
+}
+
+function closeCustomTicket(){
+  document.getElementById("custom-ticket-overlay").style.display="none";
+  // Clear fields
+  ["ct-vessel","ct-weight","ct-grade","ct-buyer"].forEach(id=>{document.getElementById(id).value="";});
+  document.getElementById("ct-error").style.display="none";
+}
+
+function previewConsolidatedLabel(data){
+  const today=new Date().toLocaleDateString("en-GB");
+  const count=parseInt(data.count)||1;
+  const bxIds=data.boxes.split(",");
+  const lpWCounts={};
+  bxIds.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)lpWCounts[bx.weight]=(lpWCounts[bx.weight]||0)+1;});
+  const lpBreakdown=Object.entries(lpWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
+  document.getElementById("t-lp-date").textContent=today;
+  document.getElementById("t-lp-species").textContent=data.species.toUpperCase();
+  document.getElementById("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
+  document.getElementById("t-lp-buyer").textContent=data.buyer;
+  document.getElementById("t-lp-box").textContent=count>1?count+"x":data.boxes;
+  document.getElementById("t-lp-lot").textContent=data.lot;
+}
 </script>
 
 <!-- SUPPLY -->
@@ -944,5 +1100,73 @@ function clearSupplyForm(){
   </div>
   <div id="srch-results"></div>
 </div></div>
+
+<!-- CUSTOM TICKET MODAL -->
+<div id="custom-ticket-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1001;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;">
+  <div style="background:white;border-radius:20px;padding:1.75rem;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);margin:1rem auto;">
+    <div style="font-size:18px;font-weight:700;color:#7c3aed;margin-bottom:4px;">&#9999;&#65039; Custom issue ticket</div>
+    <div style="font-size:13px;color:#6b7280;margin-bottom:1.25rem;">This ticket will warn the buyer there is a problem with their box.</div>
+
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Vessel name</label>
+      <input type="text" id="ct-vessel" placeholder="e.g. Ocean Harvest" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:14px;color:#111827;background:#f9fafb;outline:none;"/>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Weight</label>
+      <input type="text" id="ct-weight" placeholder="e.g. 30kg" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:14px;color:#111827;background:#f9fafb;outline:none;"/>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Grade</label>
+      <input type="text" id="ct-grade" placeholder="e.g. A, B, A+" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:14px;color:#111827;background:#f9fafb;outline:none;"/>
+    </div>
+    <div style="margin-bottom:1.25rem;">
+      <label style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Buyer name</label>
+      <input type="text" id="ct-buyer" placeholder="e.g. Plymouth Fish Co." style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:14px;color:#111827;background:#f9fafb;outline:none;"/>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">Ticket preview</div>
+    <div id="ct-preview" style="border:2px dashed #dc2626;border-radius:10px;padding:14px;background:#fff;margin-bottom:1.25rem;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#6b7280;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:8px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;">
+        <span>BRIXHAM FISH MARKET</span><span id="ct-date"></span>
+      </div>
+      <div style="background:#fee2e2;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-size:12px;font-weight:700;color:#991b1b;text-align:center;letter-spacing:.05em;">
+        &#9888; ISSUE WITH THIS BOX — SEE MARKET STAFF
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-size:13px;color:#6b7280;" id="ct-prev-details">— | Grade — | —</div>
+          <div style="font-size:16px;font-weight:700;color:#111827;margin-top:4px;" id="ct-prev-buyer">—</div>
+        </div>
+        <div style="font-size:18px;font-weight:900;color:#dc2626;" id="ct-prev-boxid">—</div>
+      </div>
+    </div>
+
+    <div id="ct-error" style="display:none;background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;">&#9888; Please fill in all fields.</div>
+    <button onclick="printCustomTicket()" style="width:100%;padding:12px;background:#7c3aed;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">&#128424; Print custom ticket</button>
+    <button onclick="closeCustomTicket()" style="width:100%;padding:12px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">&#8592; Back</button>
+  </div>
+</div>
+
+<!-- FLAG ACTION MODAL -->
+<div id="flag-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:1.5rem;">
+  <div style="background:white;border-radius:20px;padding:1.75rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="font-size:24px;text-align:center;margin-bottom:8px;">&#9888;&#65039;</div>
+    <div style="font-size:16px;font-weight:700;color:#111827;text-align:center;margin-bottom:6px;">Flag submitted</div>
+    <div style="font-size:13px;color:#6b7280;text-align:center;margin-bottom:1.5rem;line-height:1.5;" id="flag-modal-msg">The auctioneer has been notified.</div>
+    <div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;">What would you like to do with this ticket?</div>
+    <button onclick="flagModalIgnore()" style="width:100%;padding:12px;background:#dc2626;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      &#10060; Ignore ticket — box doesn't need a label
+    </button>
+    <button onclick="flagModalKeep()" style="width:100%;padding:12px;background:#185FA5;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      &#127991;&#65039; Keep ticket — still print a label
+    </button>
+    <button onclick="flagModalCustom()" style="width:100%;padding:12px;background:#7c3aed;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      &#9999;&#65039; Create custom ticket
+    </button>
+    <button onclick="flagModalDismiss()" style="width:100%;padding:12px;background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">
+      &#8629; Back to flagging
+    </button>
+  </div>
+</div>
 </body>
 </html>
