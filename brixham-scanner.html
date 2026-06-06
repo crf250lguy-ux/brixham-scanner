@@ -408,15 +408,40 @@ function showTicketResult(boxId){
   const box=AUCTION_DATA[boxId];
   if(!box){document.getElementById("t-error").classList.add("show");return;}
   const today=new Date().toLocaleDateString("en-GB");
-  document.getElementById("t-boxid").textContent=boxId;
-  document.getElementById("t-species").textContent=box.species;
-  document.getElementById("t-weight").textContent=box.weight;
-  document.getElementById("t-grade").textContent=box.grade;
-  document.getElementById("t-lot").textContent=box.lot;
-  document.getElementById("t-vessel").textContent=box.vessel;
-  document.getElementById("t-buyer").textContent=box.buyer;
-  document.getElementById("t-buyerloc").textContent=box.buyerLoc;
-  document.getElementById("t-lp-date").textContent=today;
+
+  if(box.groupId){
+    // Show group representative ID (lowest numbered box in group)
+    const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
+    const repId=groupBoxes.map(([id])=>id).sort()[0];
+    // Find full box weight
+    const wCounts={};
+    groupBoxes.forEach(([id,b])=>{wCounts[b.weight]=(wCounts[b.weight]||0)+1;});
+    const fullW=Object.entries(wCounts).sort((a,b)=>b[1]-a[1])[0][0];
+    const totalKg=groupBoxes.reduce((sum,[id,b])=>sum+(parseFloat(b.weight)||0),0);
+    // Build weight breakdown string
+    const wBreakdown={};
+    groupBoxes.forEach(([id,b])=>{wBreakdown[b.weight]=(wBreakdown[b.weight]||0)+1;});
+    const breakdownStr=Object.entries(wBreakdown).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
+    document.getElementById("t-boxid").textContent=repId+" (scanned: "+boxId+")";
+    document.getElementById("t-species").textContent=box.species;
+    document.getElementById("t-weight").textContent=totalKg+"kg total — "+breakdownStr;
+    document.getElementById("t-grade").textContent=box.grade;
+    document.getElementById("t-lot").textContent=box.lot;
+    document.getElementById("t-vessel").textContent=box.vessel;
+    document.getElementById("t-buyer").textContent=groupBoxes.length+" buyers (see below)";
+    document.getElementById("t-buyerloc").textContent="";
+  } else {
+    document.getElementById("t-boxid").textContent=boxId;
+    document.getElementById("t-species").textContent=box.species;
+    document.getElementById("t-weight").textContent=box.weight;
+    document.getElementById("t-grade").textContent=box.grade;
+    document.getElementById("t-lot").textContent=box.lot;
+    document.getElementById("t-vessel").textContent=box.vessel;
+    document.getElementById("t-buyer").textContent=box.buyer;
+    document.getElementById("t-buyerloc").textContent=box.buyerLoc;
+  }
+  const today2=new Date().toLocaleDateString("en-GB");
+  document.getElementById("t-lp-date").textContent=today2;
   document.getElementById("t-lp-species").textContent=box.species.toUpperCase();
   document.getElementById("t-lp-details").textContent=box.weight+" | Grade "+box.grade+" | "+box.vessel;
   document.getElementById("t-lp-buyer").textContent=box.buyer;
@@ -453,7 +478,10 @@ function showTicketResult(boxId){
       row.style.cssText="display:flex;justify-content:space-between;align-items:center;background:white;border-radius:8px;padding:10px 12px;border:1px solid "+borderCol+";margin-bottom:4px;";
       const count=entry.boxes.length;
       const partTag=entry.isPart?" <span style='font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:10px;font-weight:600;'>PART BOX</span>":"";
-      const label=count>1?count+" boxes — "+entry.totalKg+"kg total":entry.boxes[0]+" — "+entry.totalKg+"kg";
+      const buyerWCounts={};
+      entry.boxes.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)buyerWCounts[bx.weight]=(buyerWCounts[bx.weight]||0)+1;});
+      const buyerBreakdown=Object.entries(buyerWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
+      const label=count>1?buyerBreakdown+" — "+entry.totalKg+"kg total":entry.boxes[0]+" — "+entry.totalKg+"kg";
       const nameDiv=document.createElement("div");
       nameDiv.innerHTML="<div style='font-weight:600;color:#0C447C;font-size:13px;'>"+entry.buyer+partTag+"</div><div style='font-size:12px;color:#6b7280;'>"+label+"</div>";
       const printBtn=document.createElement("button");
@@ -485,9 +513,14 @@ function printConsolidated(btn,data){
   const today=new Date().toLocaleDateString("en-GB");
   const count=parseInt(data.count)||1;
   document.getElementById("t-lp-species").textContent=data.species.toUpperCase();
-  document.getElementById("t-lp-details").textContent=data.totalkg+" | "+count+" box"+(count>1?"es":"")+" | Grade "+data.grade+" | "+data.vessel;
+  // Build breakdown for label preview
+  const bxIds=data.boxes.split(",");
+  const lpWCounts={};
+  bxIds.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)lpWCounts[bx.weight]=(lpWCounts[bx.weight]||0)+1;});
+  const lpBreakdown=Object.entries(lpWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
+  document.getElementById("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
   document.getElementById("t-lp-buyer").textContent=data.buyer;
-  document.getElementById("t-lp-box").textContent=count>1?count+"x boxes":data.boxes;
+  document.getElementById("t-lp-box").textContent=count>1?count+"x":data.boxes;
   document.getElementById("t-lp-lot").textContent=data.lot;
   document.getElementById("t-lp-date").textContent=today;
   const ticketKey=data.buyer+"__"+data.boxes;
