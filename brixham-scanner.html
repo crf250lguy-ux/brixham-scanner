@@ -340,6 +340,7 @@
       <input type="text" id="f-manual" placeholder="Or type box ID, e.g. BX-004"/>
       <button onclick="flagLookup()">Look up</button>
     </div>
+    <button class="btn btn-green" onclick="goTo('ticket-screen')" style="margin-top:10px;">🏷️ Continue ticketing instead</button>
   </div>
   <div class="flag-error-box" id="f-error">⚠️ Box not found. Check the ID and try again.</div>
   <div class="flag-found" id="f-found">
@@ -357,13 +358,30 @@
     </div>
     <label class="flag-label" for="f-notes">Additional notes (optional)</label>
     <textarea class="flag-notes" id="f-notes" rows="3" placeholder="Describe the problem in more detail..."></textarea>
-    <button class="btn btn-orange" onclick="submitFlag()">🚩 Submit flag to auctioneer</button>
+    <label class="flag-label">Attach a photo (optional)</label>
+    <div id="f-photo-section">
+      <div class="video-frame" id="f-photo-frame" style="aspect-ratio:4/3;">
+        <div class="cam-icon" id="f-photo-icon">📸</div>
+        <p class="cam-label" id="f-photo-label">Tap to open camera</p>
+        <video id="f-photo-video" autoplay playsinline style="display:none;width:100%;height:100%;object-fit:cover;"></video>
+        <canvas id="f-photo-canvas" style="display:none;"></canvas>
+      </div>
+      <div id="f-photo-preview" style="display:none;margin-top:8px;">
+        <img id="f-photo-img" style="width:100%;border-radius:10px;border:2px solid #16a34a;" alt="Attached photo"/>
+        <button class="btn btn-grey" onclick="retakePhoto()" style="margin-top:6px;">🔄 Retake photo</button>
+      </div>
+      <button class="btn btn-grey" id="f-photo-btn" onclick="togglePhotoCamera()" style="margin-top:8px;">📸 Open camera</button>
+      <button class="btn btn-blue" id="f-capture-btn" onclick="capturePhoto()" style="display:none;margin-top:8px;">✅ Capture photo</button>
+    </div>
+    <button class="btn btn-orange" onclick="submitFlag()" style="margin-top:10px;">🚩 Submit flag to auctioneer</button>
     <button class="btn btn-grey" onclick="clearFlagForm()" style="margin-top:6px;">↩ Cancel</button>
   </div>
   <div class="flag-success" id="f-success">
     <div style="font-size:28px;margin-bottom:8px;">✅</div>
     <div style="font-size:15px;font-weight:700;color:#166534;margin-bottom:4px;">Flag submitted</div>
-    <div style="font-size:13px;color:#166534;" id="f-success-msg">The auctioneer has been notified.</div>
+    <div style="font-size:13px;color:#166534;margin-bottom:12px;" id="f-success-msg">The auctioneer has been notified.</div>
+    <button class="btn btn-blue" onclick="goTo('ticket-screen')" style="margin-top:4px;">🏷️ Continue ticketing</button>
+    <button class="btn btn-grey" onclick="clearFlagForm()" style="margin-top:6px;">🚩 Flag another box</button>
   </div>
 </div>
 </div>
@@ -656,12 +674,64 @@ function submitFlag() {
   const notes = document.getElementById('f-notes').value.trim();
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-  flags.push({ id: Date.now(), boxId, issue: selectedIssue, notes, raisedBy: currentUser, time: timeStr, resolved: false });
+  flags.push({ id: Date.now(), boxId, issue: selectedIssue, notes, photo: capturedPhotoData, raisedBy: currentUser, time: timeStr, resolved: false });
   updateMenuStats();
   document.getElementById('f-found').classList.remove('show');
   document.getElementById('f-success').classList.add('show');
   document.getElementById('f-success-msg').textContent = 'Box ' + boxId + ' flagged for: ' + selectedIssue + '. The auctioneer has been notified.';
   document.getElementById('f-manual').value = '';
+}
+
+let photoStream = null;
+let capturedPhotoData = null;
+
+function togglePhotoCamera() {
+  if (photoStream) { stopPhotoCamera(); return; }
+  const vid = document.getElementById('f-photo-video');
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    .then(s => {
+      photoStream = s;
+      vid.srcObject = s; vid.style.display = 'block';
+      document.getElementById('f-photo-icon').style.display = 'none';
+      document.getElementById('f-photo-label').style.display = 'none';
+      document.getElementById('f-photo-btn').textContent = '✕ Close camera';
+      document.getElementById('f-photo-btn').className = 'btn btn-red';
+      document.getElementById('f-capture-btn').style.display = 'block';
+    })
+    .catch(() => alert('Camera not available on this device.'));
+}
+
+function stopPhotoCamera() {
+  if (photoStream) { photoStream.getTracks().forEach(t => t.stop()); photoStream = null; }
+  const vid = document.getElementById('f-photo-video');
+  vid.style.display = 'none';
+  document.getElementById('f-photo-icon').style.display = '';
+  document.getElementById('f-photo-label').style.display = '';
+  document.getElementById('f-photo-btn').textContent = '📸 Open camera';
+  document.getElementById('f-photo-btn').className = 'btn btn-grey';
+  document.getElementById('f-capture-btn').style.display = 'none';
+}
+
+function capturePhoto() {
+  const vid = document.getElementById('f-photo-video');
+  const can = document.getElementById('f-photo-canvas');
+  can.width = vid.videoWidth; can.height = vid.videoHeight;
+  can.getContext('2d').drawImage(vid, 0, 0);
+  capturedPhotoData = can.toDataURL('image/jpeg', 0.8);
+  stopPhotoCamera();
+  document.getElementById('f-photo-img').src = capturedPhotoData;
+  document.getElementById('f-photo-preview').style.display = 'block';
+  document.getElementById('f-photo-section').querySelector('.video-frame').style.display = 'none';
+  document.getElementById('f-photo-btn').style.display = 'none';
+}
+
+function retakePhoto() {
+  capturedPhotoData = null;
+  document.getElementById('f-photo-preview').style.display = 'none';
+  document.getElementById('f-photo-section').querySelector('.video-frame').style.display = '';
+  document.getElementById('f-photo-btn').style.display = 'block';
+  document.getElementById('f-photo-btn').textContent = '📸 Open camera';
+  document.getElementById('f-photo-btn').className = 'btn btn-grey';
 }
 
 function clearFlagForm() {
@@ -670,6 +740,14 @@ function clearFlagForm() {
   document.getElementById('f-success').classList.remove('show');
   document.getElementById('f-manual').value = '';
   selectedIssue = '';
+  stopPhotoCamera();
+  capturedPhotoData = null;
+  document.getElementById('f-photo-preview').style.display = 'none';
+  document.getElementById('f-photo-section').querySelector('.video-frame').style.display = '';
+  document.getElementById('f-photo-btn').style.display = 'block';
+  document.getElementById('f-photo-btn').textContent = '📸 Open camera';
+  document.getElementById('f-photo-btn').className = 'btn btn-grey';
+  document.getElementById('f-capture-btn').style.display = 'none';
 }
 
 // ── Notifications ──
@@ -687,6 +765,7 @@ function renderNotifications() {
       '</div>' +
       '<div class="notif-issue">' + flag.issue + '</div>' +
       (flag.notes ? '<div class="notif-notes">' + flag.notes + '</div>' : '') +
+      (flag.photo ? '<img src="' + flag.photo + '" style="width:100%;border-radius:8px;margin:6px 0;" alt="Flag photo"/>' : '') +
       '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<span class="notif-by">Raised by: ' + flag.raisedBy + '</span>' +
         (!flag.resolved ? (canResolve(flag) ? '<button class="resolve-btn" onclick="resolveFlag(' + flag.id + ')">✓ Mark resolved</button>' : '<span style="font-size:11px;color:#9ca3af;font-size:11px;">Only raiser, admin or auctioneer can resolve</span>') : '<span style="font-size:11px;color:#16a34a;font-weight:600;">✓ Resolved</span>') +
