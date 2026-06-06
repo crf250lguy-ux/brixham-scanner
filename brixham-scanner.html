@@ -370,23 +370,277 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 <script>
 const STAFF={"admin":{pass:"brixham2026",role:"Admin"},"operator1":{pass:"fish123",role:"Operator"},"operator2":{pass:"fish123",role:"Operator"},"manager":{pass:"market2026",role:"Manager"},"auctioneer":{pass:"auction2026",role:"Auctioneer"},"1":{pass:"1",role:"Operator"}};
 const DEMO_DATA={
-  "BX-001":{species:"Sole",weight:"30kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon",groupId:"G-001"},
-  "BX-002":{species:"Sole",weight:"30kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon",groupId:"G-001"},
-  "BX-003":{species:"Sole",weight:"18kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon",groupId:"G-001"},
-  "BX-004":{species:"Sole",weight:"30kg",grade:"A",lot:"L-2201",vessel:"Ocean Harvest",priceKg:"£8.40",buyer:"The Fish Society",buyerLoc:"London",groupId:"G-001"},
-  "BX-005":{species:"Cod",weight:"22kg",grade:"A",lot:"L-2202",vessel:"Silver Fin",priceKg:"£4.20",buyer:"SW Fresh Fish Ltd",buyerLoc:"Exeter, Devon",groupId:"G-002"},
-  "BX-006":{species:"Cod",weight:"22kg",grade:"A",lot:"L-2202",vessel:"Silver Fin",priceKg:"£4.20",buyer:"SW Fresh Fish Ltd",buyerLoc:"Exeter, Devon",groupId:"G-002"},
-  "BX-007":{species:"Cod",weight:"14kg",grade:"A",lot:"L-2202",vessel:"Silver Fin",priceKg:"£4.20",buyer:"Torbay Fish Market",buyerLoc:"Torquay, Devon",groupId:"G-002"},
-  "BX-008":{species:"Haddock",weight:"20kg",grade:"A",lot:"L-2203",vessel:"Blue Wave",priceKg:"£3.85",buyer:"SW Fresh Fish Ltd",buyerLoc:"Exeter, Devon"},
-  "BX-009":{species:"Lemon Sole",weight:"16kg",grade:"A",lot:"L-2204",vessel:"Neptunes Pride",priceKg:"£6.20",buyer:"Plymouth Fish Co.",buyerLoc:"Plymouth, Devon"},
-  "BX-010":{species:"Turbot",weight:"12kg",grade:"A+",lot:"L-2205",vessel:"Silver Fin",priceKg:"£12.50",buyer:"The Fish Society",buyerLoc:"London"},
-  "BX-011":{species:"Plaice",weight:"15kg",grade:"B",lot:"L-2206",vessel:"Ocean Harvest",priceKg:"£3.10",buyer:"Torbay Fish Market",buyerLoc:"Torquay, Devon"},
-  "BX-012":{species:"Sea Bass",weight:"10kg",grade:"A+",lot:"L-2207",vessel:"Ocean Harvest",priceKg:"£9.75",buyer:"The Fish Society",buyerLoc:"London"},
-  "BX-013":{species:"Monkfish",weight:"14kg",grade:"A",lot:"L-2208",vessel:"Silver Fin",priceKg:"£7.30",buyer:"SW Fresh Fish Ltd",buyerLoc:"Exeter, Devon"},
-  "BX-014":{species:"Brill",weight:"11kg",grade:"A",lot:"L-2209",vessel:"Blue Wave",priceKg:"£5.60",buyer:"Brixham Seafoods Ltd",buyerLoc:"Brixham, Devon"},
-  "BX-015":{species:"Mackerel",weight:"25kg",grade:"A",lot:"L-2210",vessel:"Blue Wave",priceKg:"£1.80",buyer:"Brixham Seafoods Ltd",buyerLoc:"Brixham, Devon"},
-  "BX-016":{species:"Red Mullet",weight:"8kg",grade:"A+",lot:"L-2211",vessel:"Neptunes Pride",priceKg:"£10.20",buyer:"The Fish Society",buyerLoc:"London"},
-  "BX-017":{species:"Skate",weight:"18kg",grade:"B",lot:"L-2212",vessel:"Neptunes Pride",priceKg:"£2.40",buyer:"Torbay Fish Market",buyerLoc:"Torquay, Devon"}
+  "BX-001":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-001"},
+  "BX-002":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-001"},
+  "BX-003":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-001"},
+  "BX-004":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-005":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-006":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-007":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-008":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-009":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-010":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-011":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-012":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-013":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-014":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-015":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-016":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-017":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-018":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-019":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-020":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-021":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-022":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-023":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-024":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-025":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-026":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-027":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-028":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-029":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-030":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-031":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-032":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-033":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-034":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-035":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-036":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-037":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-038":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-039":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-040":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-041":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-042":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-043":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-044":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-045":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-046":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-047":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-048":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-049":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-050":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-001"},
+  "BX-051":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-052":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-053":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-054":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-055":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-056":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-057":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-058":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-059":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-060":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-061":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-062":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-063":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-064":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-065":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-066":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-067":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-068":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-069":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-070":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-071":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-072":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-073":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-074":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-075":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-076":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-077":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-078":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-079":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-080":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-081":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-082":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-083":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-084":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-085":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-086":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-087":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-088":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-089":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-090":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-091":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-092":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-093":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-094":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-095":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-096":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-097":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-098":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-099":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-100":{species:"Cuttlefish",weight:"40kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-271":{species:"Cuttlefish",weight:"16.4kg",grade:"A",lot:"L-2300",vessel:"William of Ladram",priceKg:"£2.80",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-001"},
+  "BX-101":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-002"},
+  "BX-102":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-002"},
+  "BX-103":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-002"},
+  "BX-104":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-002"},
+  "BX-105":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-002"},
+  "BX-106":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2301",vessel:"William of Ladram",priceKg:"£1.81",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-002"},
+  "BX-107":{species:"Lemon Sole",weight:"50kg",grade:"A",lot:"L-2302",vessel:"Emilia Jayne",priceKg:"£3.59",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-108":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2303",vessel:"Ella",priceKg:"£10.00",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-109":{species:"Ray Wings",weight:"40kg",grade:"A",lot:"L-2304",vessel:"William of Ladram",priceKg:"£3.13",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-110":{species:"Dover Sole",weight:"40kg",grade:"A",lot:"L-2305",vessel:"Catharina of Ladram",priceKg:"£10.40",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-111":{species:"Plaice",weight:"50kg",grade:"E",lot:"L-2306",vessel:"Ella",priceKg:"£2.81",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-112":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2307",vessel:"Joyful Spirit",priceKg:"£3.89",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-003"},
+  "BX-113":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2307",vessel:"Joyful Spirit",priceKg:"£3.89",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-003"},
+  "BX-114":{species:"Dover Sole",weight:"18kg",grade:"E",lot:"L-2307",vessel:"Joyful Spirit",priceKg:"£3.89",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-003"},
+  "BX-115":{species:"Lemon Sole",weight:"40kg",grade:"A",lot:"L-2308",vessel:"William of Ladram",priceKg:"£8.17",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-116":{species:"Ray Wings",weight:"50kg",grade:"A",lot:"L-2309",vessel:"Catharina of Ladram",priceKg:"£4.30",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-117":{species:"Brill",weight:"30kg",grade:"A",lot:"L-2310",vessel:"William of Ladram",priceKg:"£4.90",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-004"},
+  "BX-118":{species:"Brill",weight:"30kg",grade:"A",lot:"L-2310",vessel:"William of Ladram",priceKg:"£4.90",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-004"},
+  "BX-119":{species:"Brill",weight:"30kg",grade:"A",lot:"L-2310",vessel:"William of Ladram",priceKg:"£4.90",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-004"},
+  "BX-120":{species:"Brill",weight:"30kg",grade:"A",lot:"L-2310",vessel:"William of Ladram",priceKg:"£4.90",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-004"},
+  "BX-121":{species:"Lemon Sole",weight:"40kg",grade:"A",lot:"L-2311",vessel:"William of Ladram",priceKg:"£4.31",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-122":{species:"Brill",weight:"50kg",grade:"A",lot:"L-2312",vessel:"Emilia Jayne",priceKg:"£6.74",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-123":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-005"},
+  "BX-124":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-005"},
+  "BX-125":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-005"},
+  "BX-126":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-005"},
+  "BX-127":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-005"},
+  "BX-128":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2313",vessel:"Joyful Spirit",priceKg:"£2.45",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-005"},
+  "BX-129":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2314",vessel:"William of Ladram",priceKg:"£5.93",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-130":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2315",vessel:"William of Ladram",priceKg:"£7.06",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-131":{species:"Monkfish",weight:"50kg",grade:"E",lot:"L-2316",vessel:"Ella",priceKg:"£10.79",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-132":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-006"},
+  "BX-133":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-006"},
+  "BX-134":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-006"},
+  "BX-135":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-006"},
+  "BX-136":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-006"},
+  "BX-137":{species:"Cod",weight:"40kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-006"},
+  "BX-138":{species:"Cod",weight:"25kg",grade:"A",lot:"L-2317",vessel:"Catharina of Ladram",priceKg:"£4.63",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-006"},
+  "BX-139":{species:"Lemon Sole",weight:"30kg",grade:"E",lot:"L-2318",vessel:"Ella",priceKg:"£7.16",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-140":{species:"Monkfish",weight:"30kg",grade:"E",lot:"L-2319",vessel:"Ella",priceKg:"£2.67",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-141":{species:"Plaice",weight:"30kg",grade:"A",lot:"L-2320",vessel:"Catharina of Ladram",priceKg:"£2.85",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-007"},
+  "BX-142":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-008"},
+  "BX-143":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-008"},
+  "BX-144":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-008"},
+  "BX-145":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-008"},
+  "BX-146":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-008"},
+  "BX-147":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-008"},
+  "BX-148":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-008"},
+  "BX-149":{species:"Sea Bass",weight:"30kg",grade:"E",lot:"L-2321",vessel:"Joyful Spirit",priceKg:"£5.42",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-008"},
+  "BX-150":{species:"Turbot",weight:"40kg",grade:"E",lot:"L-2322",vessel:"Ella",priceKg:"£8.13",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-009"},
+  "BX-151":{species:"Turbot",weight:"40kg",grade:"E",lot:"L-2322",vessel:"Ella",priceKg:"£8.13",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-009"},
+  "BX-152":{species:"Turbot",weight:"40kg",grade:"E",lot:"L-2322",vessel:"Ella",priceKg:"£8.13",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-009"},
+  "BX-153":{species:"Turbot",weight:"40kg",grade:"E",lot:"L-2322",vessel:"Ella",priceKg:"£8.13",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-009"},
+  "BX-154":{species:"Turbot",weight:"15kg",grade:"E",lot:"L-2322",vessel:"Ella",priceKg:"£8.13",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-009"},
+  "BX-155":{species:"Monkfish",weight:"40kg",grade:"A",lot:"L-2323",vessel:"William of Ladram",priceKg:"£9.10",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-010"},
+  "BX-156":{species:"Brill",weight:"40kg",grade:"E",lot:"L-2324",vessel:"Ella",priceKg:"£5.22",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-011"},
+  "BX-157":{species:"Brill",weight:"22kg",grade:"E",lot:"L-2324",vessel:"Ella",priceKg:"£5.22",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-011"},
+  "BX-158":{species:"Monkfish",weight:"50kg",grade:"E",lot:"L-2325",vessel:"Joyful Spirit",priceKg:"£2.53",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-159":{species:"Cod",weight:"50kg",grade:"E",lot:"L-2326",vessel:"Joyful Spirit",priceKg:"£10.68",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-012"},
+  "BX-160":{species:"Cod",weight:"50kg",grade:"E",lot:"L-2326",vessel:"Joyful Spirit",priceKg:"£10.68",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-012"},
+  "BX-161":{species:"Cod",weight:"50kg",grade:"E",lot:"L-2326",vessel:"Joyful Spirit",priceKg:"£10.68",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-012"},
+  "BX-162":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2327",vessel:"William of Ladram",priceKg:"£6.60",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-013"},
+  "BX-163":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2327",vessel:"William of Ladram",priceKg:"£6.60",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-013"},
+  "BX-164":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-014"},
+  "BX-165":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-014"},
+  "BX-166":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-014"},
+  "BX-167":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-014"},
+  "BX-168":{species:"Haddock",weight:"40kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-014"},
+  "BX-169":{species:"Haddock",weight:"25kg",grade:"A",lot:"L-2328",vessel:"Emilia Jayne",priceKg:"£11.95",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-014"},
+  "BX-170":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2329",vessel:"Joyful Spirit",priceKg:"£2.10",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-015"},
+  "BX-171":{species:"Ray Wings",weight:"50kg",grade:"E",lot:"L-2329",vessel:"Joyful Spirit",priceKg:"£2.10",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-015"},
+  "BX-172":{species:"Turbot",weight:"50kg",grade:"E",lot:"L-2330",vessel:"Ella",priceKg:"£3.15",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-173":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2331",vessel:"Ella",priceKg:"£7.74",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-016"},
+  "BX-174":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2331",vessel:"Ella",priceKg:"£7.74",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-016"},
+  "BX-175":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2331",vessel:"Ella",priceKg:"£7.74",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-016"},
+  "BX-176":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2331",vessel:"Ella",priceKg:"£7.74",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-016"},
+  "BX-177":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2332",vessel:"Ella",priceKg:"£6.99",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-178":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2333",vessel:"Catharina of Ladram",priceKg:"£4.29",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-179":{species:"Plaice",weight:"30kg",grade:"A",lot:"L-2334",vessel:"Emilia Jayne",priceKg:"£1.60",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-180":{species:"Brill",weight:"50kg",grade:"E",lot:"L-2335",vessel:"Ella",priceKg:"£3.16",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-017"},
+  "BX-181":{species:"Brill",weight:"50kg",grade:"E",lot:"L-2335",vessel:"Ella",priceKg:"£3.16",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-017"},
+  "BX-182":{species:"Brill",weight:"50kg",grade:"E",lot:"L-2335",vessel:"Ella",priceKg:"£3.16",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-017"},
+  "BX-183":{species:"Brill",weight:"25kg",grade:"E",lot:"L-2335",vessel:"Ella",priceKg:"£3.16",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-017"},
+  "BX-184":{species:"Brill",weight:"50kg",grade:"A",lot:"L-2336",vessel:"Catharina of Ladram",priceKg:"£10.08",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-185":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2337",vessel:"Catharina of Ladram",priceKg:"£5.10",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-018"},
+  "BX-186":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2337",vessel:"Catharina of Ladram",priceKg:"£5.10",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-018"},
+  "BX-187":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2337",vessel:"Catharina of Ladram",priceKg:"£5.10",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-018"},
+  "BX-188":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2337",vessel:"Catharina of Ladram",priceKg:"£5.10",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-018"},
+  "BX-189":{species:"Sea Bass",weight:"30kg",grade:"A",lot:"L-2338",vessel:"Catharina of Ladram",priceKg:"£8.19",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-019"},
+  "BX-190":{species:"Sea Bass",weight:"30kg",grade:"A",lot:"L-2338",vessel:"Catharina of Ladram",priceKg:"£8.19",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-019"},
+  "BX-191":{species:"Sea Bass",weight:"30kg",grade:"A",lot:"L-2338",vessel:"Catharina of Ladram",priceKg:"£8.19",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-019"},
+  "BX-192":{species:"Ray Wings",weight:"50kg",grade:"A",lot:"L-2339",vessel:"Catharina of Ladram",priceKg:"£5.99",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-193":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2340",vessel:"William of Ladram",priceKg:"£10.99",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-194":{species:"Monkfish",weight:"30kg",grade:"E",lot:"L-2341",vessel:"Ella",priceKg:"£6.01",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-195":{species:"Plaice",weight:"30kg",grade:"A",lot:"L-2342",vessel:"William of Ladram",priceKg:"£10.94",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-196":{species:"Lemon Sole",weight:"50kg",grade:"A",lot:"L-2343",vessel:"Emilia Jayne",priceKg:"£10.75",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-020"},
+  "BX-197":{species:"Ray Wings",weight:"40kg",grade:"A",lot:"L-2344",vessel:"William of Ladram",priceKg:"£9.92",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-198":{species:"Plaice",weight:"30kg",grade:"A",lot:"L-2345",vessel:"Emilia Jayne",priceKg:"£5.52",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-199":{species:"Turbot",weight:"22kg",grade:"A",lot:"L-2346",vessel:"William of Ladram",priceKg:"£8.43",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-021"},
+  "BX-200":{species:"Plaice",weight:"40kg",grade:"A",lot:"L-2347",vessel:"Catharina of Ladram",priceKg:"£5.19",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-201":{species:"Haddock",weight:"50kg",grade:"E",lot:"L-2348",vessel:"Ella",priceKg:"£4.98",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-202":{species:"Dover Sole",weight:"30kg",grade:"A",lot:"L-2349",vessel:"William of Ladram",priceKg:"£11.83",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-022"},
+  "BX-203":{species:"Dover Sole",weight:"30kg",grade:"A",lot:"L-2349",vessel:"William of Ladram",priceKg:"£11.83",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-022"},
+  "BX-204":{species:"Dover Sole",weight:"30kg",grade:"A",lot:"L-2349",vessel:"William of Ladram",priceKg:"£11.83",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-022"},
+  "BX-205":{species:"Dover Sole",weight:"30kg",grade:"A",lot:"L-2349",vessel:"William of Ladram",priceKg:"£11.83",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-022"},
+  "BX-206":{species:"Dover Sole",weight:"12kg",grade:"A",lot:"L-2349",vessel:"William of Ladram",priceKg:"£11.83",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-022"},
+  "BX-207":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-023"},
+  "BX-208":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-023"},
+  "BX-209":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-023"},
+  "BX-210":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-023"},
+  "BX-211":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-023"},
+  "BX-212":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2350",vessel:"Joyful Spirit",priceKg:"£11.17",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-023"},
+  "BX-213":{species:"Cod",weight:"50kg",grade:"E",lot:"L-2351",vessel:"Ella",priceKg:"£10.95",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-214":{species:"Plaice",weight:"40kg",grade:"E",lot:"L-2352",vessel:"Ella",priceKg:"£8.82",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-215":{species:"Ray Wings",weight:"40kg",grade:"E",lot:"L-2353",vessel:"Ella",priceKg:"£8.61",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-216":{species:"Brill",weight:"50kg",grade:"A",lot:"L-2354",vessel:"Emilia Jayne",priceKg:"£10.25",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-217":{species:"Plaice",weight:"50kg",grade:"A",lot:"L-2355",vessel:"Catharina of Ladram",priceKg:"£7.87",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon"},
+  "BX-218":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2356",vessel:"Catharina of Ladram",priceKg:"£6.87",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-219":{species:"Dover Sole",weight:"50kg",grade:"A",lot:"L-2357",vessel:"Emilia Jayne",priceKg:"£8.00",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-220":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2358",vessel:"William of Ladram",priceKg:"£3.05",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-221":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2359",vessel:"William of Ladram",priceKg:"£6.28",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-222":{species:"Lemon Sole",weight:"40kg",grade:"E",lot:"L-2360",vessel:"Ella",priceKg:"£5.70",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall"},
+  "BX-223":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2361",vessel:"Emilia Jayne",priceKg:"£3.35",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-224":{species:"Turbot",weight:"30kg",grade:"E",lot:"L-2362",vessel:"Ella",priceKg:"£6.29",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-225":{species:"Sea Bass",weight:"40kg",grade:"E",lot:"L-2363",vessel:"Joyful Spirit",priceKg:"£7.93",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-226":{species:"Haddock",weight:"30kg",grade:"E",lot:"L-2364",vessel:"Ella",priceKg:"£9.31",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-227":{species:"Turbot",weight:"50kg",grade:"E",lot:"L-2365",vessel:"Joyful Spirit",priceKg:"£4.41",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-228":{species:"Turbot",weight:"30kg",grade:"E",lot:"L-2366",vessel:"Ella",priceKg:"£4.86",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-024"},
+  "BX-229":{species:"Turbot",weight:"30kg",grade:"E",lot:"L-2366",vessel:"Ella",priceKg:"£4.86",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-024"},
+  "BX-230":{species:"Dover Sole",weight:"50kg",grade:"E",lot:"L-2367",vessel:"Ella",priceKg:"£5.78",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-025"},
+  "BX-231":{species:"Dover Sole",weight:"25kg",grade:"E",lot:"L-2367",vessel:"Ella",priceKg:"£5.78",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-025"},
+  "BX-232":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2368",vessel:"Joyful Spirit",priceKg:"£4.64",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-026"},
+  "BX-233":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2368",vessel:"Joyful Spirit",priceKg:"£4.64",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-026"},
+  "BX-234":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2368",vessel:"Joyful Spirit",priceKg:"£4.64",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-026"},
+  "BX-235":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2368",vessel:"Joyful Spirit",priceKg:"£4.64",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-026"},
+  "BX-236":{species:"Haddock",weight:"40kg",grade:"E",lot:"L-2368",vessel:"Joyful Spirit",priceKg:"£4.64",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-026"},
+  "BX-237":{species:"Haddock",weight:"50kg",grade:"E",lot:"L-2369",vessel:"Joyful Spirit",priceKg:"£9.90",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall"},
+  "BX-238":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-027"},
+  "BX-239":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-027"},
+  "BX-240":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-027"},
+  "BX-241":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-027"},
+  "BX-242":{species:"Turbot",weight:"30kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-027"},
+  "BX-243":{species:"Turbot",weight:"22kg",grade:"A",lot:"L-2370",vessel:"Emilia Jayne",priceKg:"£7.11",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-027"},
+  "BX-244":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2371",vessel:"Ella",priceKg:"£5.48",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-028"},
+  "BX-245":{species:"Brill",weight:"30kg",grade:"E",lot:"L-2371",vessel:"Ella",priceKg:"£5.48",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-028"},
+  "BX-246":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2372",vessel:"Emilia Jayne",priceKg:"£4.42",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon"},
+  "BX-247":{species:"Plaice",weight:"50kg",grade:"E",lot:"L-2373",vessel:"Joyful Spirit",priceKg:"£7.16",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-248":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2374",vessel:"Catharina of Ladram",priceKg:"£3.10",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-029"},
+  "BX-249":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2374",vessel:"Catharina of Ladram",priceKg:"£3.10",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-029"},
+  "BX-250":{species:"Lemon Sole",weight:"30kg",grade:"A",lot:"L-2374",vessel:"Catharina of Ladram",priceKg:"£3.10",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",groupId:"G-029"},
+  "BX-251":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-030"},
+  "BX-252":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-030"},
+  "BX-253":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"Flying Fish",buyerLoc:"Plymouth, Devon",groupId:"G-030"},
+  "BX-254":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-030"},
+  "BX-255":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-030"},
+  "BX-256":{species:"Turbot",weight:"40kg",grade:"A",lot:"L-2375",vessel:"Emilia Jayne",priceKg:"£9.04",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-030"},
+  "BX-257":{species:"Plaice",weight:"40kg",grade:"A",lot:"L-2376",vessel:"Emilia Jayne",priceKg:"£7.55",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon"},
+  "BX-258":{species:"Haddock",weight:"30kg",grade:"E",lot:"L-2377",vessel:"Joyful Spirit",priceKg:"£9.72",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",groupId:"G-031"},
+  "BX-259":{species:"Haddock",weight:"30kg",grade:"E",lot:"L-2377",vessel:"Joyful Spirit",priceKg:"£9.72",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-031"},
+  "BX-260":{species:"Haddock",weight:"30kg",grade:"E",lot:"L-2377",vessel:"Joyful Spirit",priceKg:"£9.72",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-031"},
+  "BX-261":{species:"Haddock",weight:"30kg",grade:"E",lot:"L-2377",vessel:"Joyful Spirit",priceKg:"£9.72",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-031"},
+  "BX-262":{species:"Sea Bass",weight:"30kg",grade:"A",lot:"L-2378",vessel:"Catharina of Ladram",priceKg:"£6.81",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-263":{species:"Monkfish",weight:"30kg",grade:"A",lot:"L-2379",vessel:"Catharina of Ladram",priceKg:"£6.05",buyer:"Coombe",buyerLoc:"Exeter, Devon"},
+  "BX-264":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-032"},
+  "BX-265":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"Ocean Fish",buyerLoc:"Brixham, Devon",groupId:"G-032"},
+  "BX-266":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-032"},
+  "BX-267":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"FalFish",buyerLoc:"Falmouth, Cornwall",groupId:"G-032"},
+  "BX-268":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-032"},
+  "BX-269":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-032"},
+  "BX-270":{species:"Turbot",weight:"50kg",grade:"A",lot:"L-2380",vessel:"Catharina of Ladram",priceKg:"£7.72",buyer:"Coombe",buyerLoc:"Exeter, Devon",groupId:"G-032"}
 };
 let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set();
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
@@ -487,7 +741,15 @@ function showTicketResult(boxId){
       const count=entry.boxes.length;
       const partTag=entry.isPart?" <span style='font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:10px;font-weight:600;'>PART BOX</span>":"";
       const buyerWCounts={};
-      entry.boxes.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)buyerWCounts[bx.weight]=(buyerWCounts[bx.weight]||0)+1;});
+      // Find full weight for this buyer's boxes
+      const bWCounts={};
+      entry.boxes.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)bWCounts[bx.weight]=(bWCounts[bx.weight]||0)+1;});
+      const bFullW=Object.entries(bWCounts).sort((a,b)=>b[1]-a[1])[0]?.[0]||"";
+      entry.boxes.sort((a,b)=>{
+        const aIsPart=AUCTION_DATA[a]?AUCTION_DATA[a].weight!==bFullW:false;
+        const bIsPart=AUCTION_DATA[b]?AUCTION_DATA[b].weight!==bFullW:false;
+        return bIsPart-aIsPart;
+      }).forEach(id=>{const bx=AUCTION_DATA[id];if(bx)buyerWCounts[bx.weight]=(buyerWCounts[bx.weight]||0)+1;});
       const buyerBreakdown=Object.entries(buyerWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
       const label=count>1?buyerBreakdown+" — "+entry.totalKg+"kg total":entry.boxes[0]+" — "+entry.totalKg+"kg";
       const nameDiv=document.createElement("div");
@@ -716,26 +978,65 @@ function showFlagFound(boxId){
     const wCounts={};
     groupBoxes.forEach(([id,b])=>{wCounts[b.weight]=(wCounts[b.weight]||0)+1;});
     const fullW=Object.entries(wCounts).sort((a,b)=>b[1]-a[1])[0][0];
-    // Show each physical box individually
+    // Two-step: first show buyers, then individual boxes for selection
     buyerList.innerHTML="";
-    groupBoxes.sort((a,b)=>a[0].localeCompare(b[0])).forEach(([id,b])=>{
-      const isPart=b.weight!==fullW;
-      const btn=document.createElement("button");
-      const partTag=isPart?' <span style="font-size:10px;background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:10px;font-weight:600;">PART BOX</span>':"";
-      btn.style.cssText="width:100%;padding:10px 14px;border-radius:10px;border:2px solid #e5e7eb;background:white;font-size:13px;font-weight:600;color:#374151;cursor:pointer;text-align:left;transition:all .15s;margin-bottom:4px;";
-      btn.innerHTML="<div style='display:flex;justify-content:space-between;align-items:center;'><span style='color:#0C447C;font-weight:700;'>"+id+"</span>"+partTag+"</div><div style='font-size:12px;color:#6b7280;font-weight:400;margin-top:2px;'>"+b.buyer+" — "+b.weight+"</div>";
-      btn.dataset.buyer=b.buyer;
-      btn.dataset.buyerloc=b.buyerLoc;
-      btn.dataset.boxes=id;
-      btn.onclick=function(){
-        buyerList.querySelectorAll("button").forEach(bt=>{bt.style.borderColor="#e5e7eb";bt.style.background="white";});
-        this.style.borderColor="#dc2626";this.style.background="#fff5f5";
-        selectedFlagBuyer=this.dataset.buyer;
-        selectedFlagBuyerLoc=this.dataset.buyerloc;
-        selectedFlagBuyerBoxes=[this.dataset.boxes];
-      };
-      buyerList.appendChild(btn);
+    selectedFlagBuyerBoxes=[];
+    // Build consolidated buyer map
+    const wCounts2={};
+    groupBoxes.forEach(([id,b])=>{wCounts2[b.weight]=(wCounts2[b.weight]||0)+1;});
+    const fullW2=Object.entries(wCounts2).sort((a,b)=>b[1]-a[1])[0][0];
+    const buyerMap2={};
+    groupBoxes.forEach(([id,b])=>{
+      if(!buyerMap2[b.buyer])buyerMap2[b.buyer]={buyerLoc:b.buyerLoc,boxes:[],totalKg:0};
+      buyerMap2[b.buyer].boxes.push(id);
+      buyerMap2[b.buyer].totalKg+=parseFloat(b.weight.replace(/[^0-9.]/g,""))||0;
     });
+    // Render buyer rows - tap to expand box list
+    Object.entries(buyerMap2).forEach(([buyer,entry])=>{
+      const buyerRow=document.createElement("div");
+      buyerRow.style.cssText="border-radius:10px;border:1.5px solid #e5e7eb;margin-bottom:6px;overflow:hidden;";
+      const buyerHeader=document.createElement("div");
+      buyerHeader.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:#f9fafb;";
+      buyerHeader.innerHTML="<div><div style='font-weight:600;color:#0C447C;font-size:13px;'>"+buyer+"</div><div style='font-size:12px;color:#6b7280;'>"+entry.boxes.length+" box"+(entry.boxes.length>1?"es":"")+" — "+entry.totalKg+"kg total</div></div><span style='color:#6b7280;font-size:12px;' class='bh-chevron'>&#9660;</span>";
+      const boxList=document.createElement("div");
+      boxList.style.cssText="display:none;padding:8px;background:white;border-top:1px solid #f3f4f6;display:none;";
+      // Add "Select all for this buyer" option
+      const selAllRow=document.createElement("div");
+      selAllRow.style.cssText="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer;background:#eff6ff;margin-bottom:6px;";
+      selAllRow.innerHTML="<input type='checkbox' class='flag-chk-all' data-buyer='"+buyer+"' style='width:16px;height:16px;cursor:pointer;'><span style='font-size:12px;font-weight:600;color:#1d4ed8;'>Select all "+entry.boxes.length+" boxes</span>";
+      boxList.appendChild(selAllRow);
+      entry.boxes.forEach(id=>{
+        const bx=AUCTION_DATA[id];if(!bx)return;
+        const isPart=bx.weight!==fullW2;
+        const row=document.createElement("div");
+        row.style.cssText="display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;margin-bottom:3px;";
+        const chk=document.createElement("input");
+        chk.type="checkbox";chk.className="flag-box-chk";chk.dataset.boxid=id;chk.dataset.buyer=buyer;chk.dataset.buyerloc=entry.buyerLoc;
+        chk.style.cssText="width:16px;height:16px;cursor:pointer;flex-shrink:0;";
+        const lbl=document.createElement("div");
+        lbl.innerHTML="<span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span>"+(isPart?" <span style='font-size:10px;background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:8px;'>PART</span>":"")+"<span style='font-size:12px;color:#6b7280;margin-left:6px;'>"+bx.weight+"</span>";
+        chk.onchange=function(){updateFlagSelection();};
+        row.onclick=function(e){if(e.target!==chk)chk.click();};
+        row.appendChild(chk);row.appendChild(lbl);
+        boxList.appendChild(row);
+      });
+      // Select all checkbox logic
+      selAllRow.querySelector(".flag-chk-all").onchange=function(){
+        const checked=this.checked;
+        boxList.querySelectorAll(".flag-box-chk").forEach(c=>{c.checked=checked;});
+        updateFlagSelection();
+      };
+      buyerHeader.onclick=function(){
+        const isOpen=boxList.style.display==="block";
+        boxList.style.display=isOpen?"none":"block";
+        this.querySelector(".bh-chevron").innerHTML=isOpen?"&#9660;":"&#9650;";
+      };
+      buyerRow.appendChild(buyerHeader);buyerRow.appendChild(boxList);
+      buyerList.appendChild(buyerRow);
+    });
+    // Submit button updates
+    const submitBtn=document.querySelector("#f-found .btn-orange");
+    if(submitBtn)submitBtn.textContent="&#128681; Submit flag (0 boxes selected)";
     buyerSection.style.display="block";
   } else {
     buyerSection.style.display="none";
@@ -750,7 +1051,7 @@ function selectIssue(btn,issue){document.querySelectorAll(".issue-btn").forEach(
 function submitFlag(){
   const actualFlagBoxId=document.getElementById("f-actual-boxid").value||document.getElementById("f-boxid").textContent;
   const box=AUCTION_DATA[actualFlagBoxId];
-  if(box&&box.groupId&&!selectedFlagBuyer){alert("Please select which buyer has the problem.");return;}
+  if(box&&box.groupId&&selectedFlagBuyerBoxes.length===0){alert("Please select at least one box.");return;}
   if(!selectedIssue){alert("Please select a problem type.");return;}
   const notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   const affectedBoxIds=selectedFlagBuyerBoxes.length>0?selectedFlagBuyerBoxes:[actualFlagBoxId];
@@ -1002,6 +1303,17 @@ function closeCustomTicket(){
   // Clear fields
   ["ct-vessel","ct-weight","ct-grade","ct-buyer"].forEach(id=>{document.getElementById(id).value="";});
   document.getElementById("ct-error").style.display="none";
+}
+
+
+function updateFlagSelection(){
+  const checked=Array.from(document.querySelectorAll(".flag-box-chk:checked"));
+  selectedFlagBuyerBoxes=checked.map(c=>c.dataset.boxid);
+  // Use buyer of first selected, or multiple
+  const buyers=[...new Set(checked.map(c=>c.dataset.buyer))];
+  selectedFlagBuyer=buyers.length===1?buyers[0]:buyers.length>1?"Multiple buyers":null;
+  const submitBtn=document.querySelector("#f-found .btn-orange");
+  if(submitBtn)submitBtn.textContent="\uD83D\uDEA9 Submit flag ("+checked.length+" box"+(checked.length!==1?"es":"")+" selected)";
 }
 
 function previewConsolidatedLabel(data){
