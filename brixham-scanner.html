@@ -233,7 +233,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
       <button class="btn btn-blue" onclick="printLabel()" id="t-print-btn" style="margin-top:0;">Print label</button>
       <button class="btn btn-orange" onclick="flagFromTicket()" style="margin-top:0;">Flag box</button>
     </div>
-    <button class="btn btn-grey" onclick="clearTicketResult()" style="margin-top:0;margin-bottom:1rem;">Scan next box</button>
+    <button class="btn btn-green" onclick="clearTicketResult()" style="margin-top:0;margin-bottom:1rem;">Scan next box</button>
     <div class="detail-grid">
       <div class="detail-item"><label>Species</label><span id="t-species">-</span></div>
       <div class="detail-item"><label>Weight</label><span id="t-weight">-</span></div>
@@ -685,7 +685,8 @@ function showTicketResult(boxId){
     document.getElementById("t-lot").textContent=box.lot;
     document.getElementById("t-vessel").textContent=box.vessel;
     const uniqueBuyerCount=new Set(groupBoxes.map(([id,b])=>b.buyer)).size;
-    document.getElementById("t-buyer").textContent=uniqueBuyerCount+" buyer"+(uniqueBuyerCount>1?"s":"")+" (see below)";
+    const totalBoxCount=groupBoxes.length;
+    document.getElementById("t-buyer").textContent=uniqueBuyerCount+" buyer"+(uniqueBuyerCount>1?"s":"")+" — "+totalBoxCount+" boxes total (see below)";
     document.getElementById("t-buyerloc").textContent="";
   } else {
     document.getElementById("t-boxid").textContent=boxId;
