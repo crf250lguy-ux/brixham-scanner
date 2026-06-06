@@ -227,6 +227,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
   <div class="demo-section"><h3 id="t-chips-label">DEMO &#8212; tap a box to try it</h3><div class="demo-chips" id="t-chips"></div></div>
   <div class="error-box" id="t-error">&#9888;&#65039; Box not found in today's auction data.</div>
   <div class="result-card" id="t-result">
+    <input type="hidden" id="t-actual-boxid" value=""/>
     <div class="result-top"><div><div class="box-sub">Box found</div><div class="box-id" id="t-boxid">-</div></div><span class="badge badge-sold">Sold</span></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
       <button class="btn btn-blue" onclick="printLabel()" id="t-print-btn" style="margin-top:0;">Print label</button>
@@ -244,7 +245,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div id="t-group-section" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:1rem;">
       <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:8px;">This lot has multiple buyers — select labels to print:</div>
       <div id="t-group-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-      <button class="btn btn-blue" onclick="printAll()" style="margin-top:10px;">Print all labels</button>
+
     </div>
     <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">LABEL PREVIEW</div>
     <div class="label-section">
@@ -254,9 +255,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
         <div><div class="label-boxnum" id="t-lp-box">-</div><div class="label-lot" id="t-lp-lot">-</div></div>
       </div>
     </div>
-    <button class="btn btn-blue" onclick="printLabel()" id="t-print-btn">Print label (Zebra)</button>
-    <button class="btn btn-orange" onclick="flagFromTicket()" style="margin-top:6px;">&#128681; Flag this box</button>
-    <button class="btn btn-grey" onclick="clearTicketResult()" style="margin-top:6px;">Scan next box</button>
+
   </div>
 </div></div>
 
@@ -407,6 +406,7 @@ function showTicketResult(boxId){
   document.getElementById("t-result").classList.remove("show");
   const box=AUCTION_DATA[boxId];
   if(!box){document.getElementById("t-error").classList.add("show");return;}
+  document.getElementById("t-actual-boxid").value=boxId;
   const today=new Date().toLocaleDateString("en-GB");
 
   if(box.groupId){
@@ -449,7 +449,10 @@ function showTicketResult(boxId){
   document.getElementById("t-lp-lot").textContent=box.lot;
   const groupSection=document.getElementById("t-group-section");
   const groupList=document.getElementById("t-group-list");
+  const printBtn=document.getElementById("t-print-btn");
   if(box.groupId){
+    printBtn.textContent="Print all labels";
+    printBtn.onclick=printAll;
     const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
     groupList.innerHTML="";
     // Consolidate by buyer+weight - full boxes of same weight consolidate, part boxes stay separate
@@ -504,6 +507,8 @@ function showTicketResult(boxId){
     groupSection.style.display="block";
   } else {
     groupSection.style.display="none";
+    printBtn.textContent="Print label";
+    printBtn.onclick=printLabel;
   }
   document.getElementById("t-result").classList.add("show");
   document.getElementById("t-result").scrollIntoView({behavior:"smooth",block:"start"});
@@ -559,13 +564,14 @@ function printAll(){
   });
   const ticketCount=ticketKeys.size;
   // Only count boxes not already printed
-  groupBoxes.forEach(([id])=>{printedBoxIds.add(id);});
-  printed=printedBoxIds.size;
+  // Track group lots printed separately - dont mark individual boxes as printed
+  const groupKey="group_"+box.groupId;
+  if(!printedBoxIds.has(groupKey)){printedBoxIds.add(groupKey);printed++;updateMenuStats();}
   updateMenuStats();
-  const btn=document.querySelector("#t-group-section .btn-blue");
-  btn.textContent=ticketCount+" label"+(ticketCount>1?"s":"")+" sent!";
-  btn.style.background="#166534";
-  setTimeout(()=>{btn.textContent="Print all labels";btn.style.background="";},2500);
+  const topBtn=document.getElementById("t-print-btn");
+  topBtn.textContent=ticketCount+" label"+(ticketCount>1?"s":"")+" sent!";
+  topBtn.className="btn btn-green";topBtn.disabled=true;
+  setTimeout(()=>{topBtn.textContent="Reprint all labels";topBtn.className="btn btn-blue";topBtn.disabled=false;},2500);
 }
 
 function runSearch(){
@@ -617,21 +623,21 @@ function reprintLabel(boxId,btn){
 }
 
 function printLabel(){
-  const boxId=document.getElementById("t-boxid").textContent;
+  const boxId=document.getElementById("t-actual-boxid").value||document.getElementById("t-boxid").textContent;
   const btn=document.getElementById("t-print-btn");
   btn.className="btn btn-green";btn.disabled=true;
   if(printedBoxIds.has(boxId)){
-    btn.textContent="Reprinted!";
-    setTimeout(()=>{btn.textContent="Print label (Zebra)";btn.className="btn btn-blue";btn.disabled=false;},2500);
+    btn.textContent="Printing...";
+    setTimeout(()=>{btn.textContent="Reprint label";btn.className="btn btn-blue";btn.disabled=false;},2500);
     return;
   }
   printedBoxIds.add(boxId);
   printed=printedBoxIds.size;
-  btn.textContent="Sent to Zebra printer!";
+  btn.textContent="Printing...";
   updateMenuStats();
-  setTimeout(()=>{btn.textContent="Print label (Zebra)";btn.className="btn btn-blue";btn.disabled=false;},2500);
+  setTimeout(()=>{btn.textContent="Reprint label";btn.className="btn btn-blue";btn.disabled=false;},2500);
 }
-function flagFromTicket(){const boxId=document.getElementById("t-boxid").textContent;stopCamera("t");goTo("flag-screen");showFlagFound(boxId);}
+function flagFromTicket(){const boxId=document.getElementById("t-actual-boxid").value;stopCamera("t");goTo("flag-screen");showFlagFound(boxId);}
 function clearTicketResult(){document.getElementById("t-result").classList.remove("show");document.getElementById("t-error").classList.remove("show");document.getElementById("t-manual").value="";}
 function flagLookup(){const val=document.getElementById("f-manual").value.trim().toUpperCase();if(val)showFlagFound(val);}
 document.getElementById("f-manual").addEventListener("keydown",e=>{if(e.key==="Enter")flagLookup();});
