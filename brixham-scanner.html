@@ -22,6 +22,24 @@
   .card { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
   .card h2 { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
 
+  /* CSV section */
+  .csv-card { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); border: 2px solid #e0e7ff; }
+  .csv-card h2 { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .csv-card p { font-size: 13px; color: #6b7280; margin-bottom: 12px; line-height: 1.5; }
+  .csv-status { border-radius: 10px; padding: 10px 14px; font-size: 13px; margin-top: 10px; display: none; }
+  .csv-status.show { display: block; }
+  .csv-status.success { background: #dcfce7; color: #166534; }
+  .csv-status.error { background: #fee2e2; color: #991b1b; }
+  .csv-using-demo { background: #fef9c3; color: #854d0e; border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .csv-using-live { background: #dcfce7; color: #166534; border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .file-drop { border: 2px dashed #c7d2fe; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: background 0.15s; margin-bottom: 8px; }
+  .file-drop:hover { background: #eef2ff; }
+  .file-drop input { display: none; }
+  .file-drop-icon { font-size: 28px; margin-bottom: 6px; }
+  .file-drop-text { font-size: 13px; color: #6366f1; font-weight: 600; }
+  .file-drop-sub { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+
+  /* Scanner */
   .video-frame { width: 100%; aspect-ratio: 1; background: #111827; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
   .scanner-line { position: absolute; left: 10%; right: 10%; height: 2px; background: #3b82f6; top: 30%; animation: scan 2s ease-in-out infinite; display: none; }
   @keyframes scan { 0%,100% { top: 20%; } 50% { top: 75%; } }
@@ -41,7 +59,7 @@
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
   .scanning-bar span { font-size: 13px; color: #1d4ed8; }
 
-  .btn { display: block; width: 100%; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-top: 10px; transition: background 0.15s, transform 0.1s; }
+  .btn { display: block; width: 100%; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-top: 10px; transition: background 0.15s, transform 0.1s; text-align: center; text-decoration: none; }
   .btn:active { transform: scale(0.98); }
   .btn-blue { background: #185FA5; color: white; }
   .btn-blue:hover { background: #0C447C; }
@@ -50,6 +68,8 @@
   .btn-grey { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
   .btn-grey:hover { background: #e5e7eb; }
   .btn-green { background: #166534; color: white; }
+  .btn-indigo { background: #4f46e5; color: white; }
+  .btn-indigo:hover { background: #4338ca; }
 
   .manual-row { display: flex; gap: 8px; margin-top: 10px; }
   .manual-row input { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #e5e7eb; font-size: 14px; color: #111827; background: #f9fafb; outline: none; transition: border-color 0.15s; }
@@ -87,7 +107,6 @@
   .label-boxnum { font-size: 32px; font-weight: 900; color: #0C447C; text-align: right; line-height: 1; }
   .label-lot { font-size: 11px; color: #6b7280; text-align: right; }
 
-  /* ── Demo QR list ── */
   .demo-section { background: white; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
   .demo-section h3 { font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 10px; }
   .demo-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -102,7 +121,7 @@
     <div class="logo-circle">🐟</div>
     <div>
       <h1>Brixham Trawler Agents</h1>
-      <p>Box Label Scanner</p>
+      <p id="header-sub">Box Label Scanner — Demo data</p>
     </div>
   </div>
 
@@ -112,6 +131,23 @@
     <div class="stat"><div class="s-num" id="stat-pending">12</div><div class="s-lbl">Pending</div></div>
   </div>
 
+  <!-- CSV Import -->
+  <div class="csv-card">
+    <h2>📂 Load auction data</h2>
+    <p>Each morning, export today's auction results from Neptune as a CSV and load it here. The app will use that data instead of the demo data.</p>
+    <div id="data-mode-badge" class="csv-using-demo">⚠️ Using demo data — load a real CSV to begin</div>
+    <div class="file-drop" onclick="document.getElementById('csv-input').click()">
+      <input type="file" id="csv-input" accept=".csv" onchange="loadCSV(event)" />
+      <div class="file-drop-icon">📄</div>
+      <div class="file-drop-text">Tap to choose CSV file</div>
+      <div class="file-drop-sub">Export from Neptune, then load here</div>
+    </div>
+    <div class="csv-status" id="csv-status"></div>
+    <button class="btn btn-indigo" onclick="downloadTemplate()">⬇️ Download CSV template</button>
+    <button class="btn btn-grey" onclick="resetToDemo()" style="margin-top:6px;">↩ Go back to demo data</button>
+  </div>
+
+  <!-- Scanner -->
   <div class="card">
     <h2>📷 Scan box QR code</h2>
     <div class="video-frame" id="video-frame">
@@ -135,7 +171,7 @@
   </div>
 
   <div class="demo-section">
-    <h3>DEMO — tap a box to try it</h3>
+    <h3 id="chips-label">DEMO — tap a box to try it</h3>
     <div class="demo-chips" id="demo-chips"></div>
   </div>
 
@@ -190,37 +226,151 @@
 
 <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
-// ── Auction data (replace with real data or CSV import later) ──
-const AUCTION_DATA = {
-  "BX-001": { species:"Sole",      weight:"18kg", grade:"A",  lot:"L-2201", vessel:"Ocean Harvest",  priceKg:"£8.40",  buyer:"Plymouth Fish Co.",      buyerLoc:"Plymouth, Devon" },
-  "BX-002": { species:"Cod",       weight:"22kg", grade:"A",  lot:"L-2202", vessel:"Silver Fin",     priceKg:"£4.20",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
-  "BX-003": { species:"Plaice",    weight:"15kg", grade:"B",  lot:"L-2203", vessel:"Ocean Harvest",  priceKg:"£3.10",  buyer:"Torbay Fish Market",     buyerLoc:"Torquay, Devon" },
-  "BX-004": { species:"Haddock",   weight:"20kg", grade:"A",  lot:"L-2204", vessel:"Blue Wave",      priceKg:"£3.85",  buyer:"SW Fresh Fish Ltd",      buyerLoc:"Exeter, Devon" },
-  "BX-005": { species:"Turbot",    weight:"12kg", grade:"A+", lot:"L-2205", vessel:"Silver Fin",     priceKg:"£12.50", buyer:"The Fish Society",       buyerLoc:"London" },
-  "BX-006": { species:"Mackerel",  weight:"25kg", grade:"A",  lot:"L-2206", vessel:"Blue Wave",      priceKg:"£1.80",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
-  "BX-007": { species:"Lemon Sole",weight:"16kg", grade:"A",  lot:"L-2207", vessel:"Neptune's Pride",priceKg:"£6.20",  buyer:"Plymouth Fish Co.",      buyerLoc:"Plymouth, Devon" },
-  "BX-008": { species:"Sea Bass",  weight:"10kg", grade:"A+", lot:"L-2208", vessel:"Ocean Harvest",  priceKg:"£9.75",  buyer:"The Fish Society",       buyerLoc:"London" },
-  "BX-009": { species:"Monkfish",  weight:"14kg", grade:"A",  lot:"L-2209", vessel:"Silver Fin",     priceKg:"£7.30",  buyer:"SW Fresh Fish Ltd",      buyerLoc:"Exeter, Devon" },
-  "BX-010": { species:"Skate",     weight:"18kg", grade:"B",  lot:"L-2210", vessel:"Neptune's Pride",priceKg:"£2.40",  buyer:"Torbay Fish Market",     buyerLoc:"Torquay, Devon" },
-  "BX-011": { species:"Brill",     weight:"11kg", grade:"A",  lot:"L-2211", vessel:"Blue Wave",      priceKg:"£5.60",  buyer:"Brixham Seafoods Ltd",   buyerLoc:"Brixham, Devon" },
-  "BX-012": { species:"Red Mullet",weight:"8kg",  grade:"A+", lot:"L-2212", vessel:"Neptune's Pride",priceKg:"£10.20", buyer:"The Fish Society",       buyerLoc:"London" },
+// ── Built-in demo data ──
+const DEMO_DATA = {
+  "BX-001": { species:"Sole",       weight:"18kg", grade:"A",  lot:"L-2201", vessel:"Ocean Harvest",   priceKg:"£8.40",  buyer:"Plymouth Fish Co.",    buyerLoc:"Plymouth, Devon" },
+  "BX-002": { species:"Cod",        weight:"22kg", grade:"A",  lot:"L-2202", vessel:"Silver Fin",      priceKg:"£4.20",  buyer:"Brixham Seafoods Ltd", buyerLoc:"Brixham, Devon" },
+  "BX-003": { species:"Plaice",     weight:"15kg", grade:"B",  lot:"L-2203", vessel:"Ocean Harvest",   priceKg:"£3.10",  buyer:"Torbay Fish Market",   buyerLoc:"Torquay, Devon" },
+  "BX-004": { species:"Haddock",    weight:"20kg", grade:"A",  lot:"L-2204", vessel:"Blue Wave",       priceKg:"£3.85",  buyer:"SW Fresh Fish Ltd",    buyerLoc:"Exeter, Devon" },
+  "BX-005": { species:"Turbot",     weight:"12kg", grade:"A+", lot:"L-2205", vessel:"Silver Fin",      priceKg:"£12.50", buyer:"The Fish Society",     buyerLoc:"London" },
+  "BX-006": { species:"Mackerel",   weight:"25kg", grade:"A",  lot:"L-2206", vessel:"Blue Wave",       priceKg:"£1.80",  buyer:"Brixham Seafoods Ltd", buyerLoc:"Brixham, Devon" },
+  "BX-007": { species:"Lemon Sole", weight:"16kg", grade:"A",  lot:"L-2207", vessel:"Neptune's Pride", priceKg:"£6.20",  buyer:"Plymouth Fish Co.",    buyerLoc:"Plymouth, Devon" },
+  "BX-008": { species:"Sea Bass",   weight:"10kg", grade:"A+", lot:"L-2208", vessel:"Ocean Harvest",   priceKg:"£9.75",  buyer:"The Fish Society",     buyerLoc:"London" },
+  "BX-009": { species:"Monkfish",   weight:"14kg", grade:"A",  lot:"L-2209", vessel:"Silver Fin",      priceKg:"£7.30",  buyer:"SW Fresh Fish Ltd",    buyerLoc:"Exeter, Devon" },
+  "BX-010": { species:"Skate",      weight:"18kg", grade:"B",  lot:"L-2210", vessel:"Neptune's Pride", priceKg:"£2.40",  buyer:"Torbay Fish Market",   buyerLoc:"Torquay, Devon" },
+  "BX-011": { species:"Brill",      weight:"11kg", grade:"A",  lot:"L-2211", vessel:"Blue Wave",       priceKg:"£5.60",  buyer:"Brixham Seafoods Ltd", buyerLoc:"Brixham, Devon" },
+  "BX-012": { species:"Red Mullet", weight:"8kg",  grade:"A+", lot:"L-2212", vessel:"Neptune's Pride", priceKg:"£10.20", buyer:"The Fish Society",     buyerLoc:"London" },
 };
 
+// Active data starts as demo
+let AUCTION_DATA = Object.assign({}, DEMO_DATA);
+let usingLiveData = false;
 let stream = null, scanning = false, rafId = null, printed = 0;
+
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas-el');
 const ctx = canvas.getContext('2d');
 
-// Build demo chips
-const chips = document.getElementById('demo-chips');
-Object.keys(AUCTION_DATA).forEach(id => {
-  const b = document.createElement('button');
-  b.className = 'demo-chip';
-  b.textContent = id;
-  b.onclick = () => showResult(id);
-  chips.appendChild(b);
-});
+function rebuildChips() {
+  const chips = document.getElementById('demo-chips');
+  chips.innerHTML = '';
+  Object.keys(AUCTION_DATA).forEach(id => {
+    const b = document.createElement('button');
+    b.className = 'demo-chip';
+    b.textContent = id;
+    b.onclick = () => showResult(id);
+    chips.appendChild(b);
+  });
+  document.getElementById('stat-total').textContent = Object.keys(AUCTION_DATA).length;
+  document.getElementById('stat-pending').textContent = Math.max(0, Object.keys(AUCTION_DATA).length - printed);
+}
+rebuildChips();
 
+// ── CSV loading ──
+function loadCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) throw new Error('File appears empty');
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, '').toLowerCase());
+      const required = ['box_id','species','weight','grade','lot_number','vessel','price_per_kg','buyer_name','buyer_location'];
+      const missing = required.filter(r => !headers.includes(r));
+      if (missing.length > 0) throw new Error('Missing columns: ' + missing.join(', '));
+      const newData = {};
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        const vals = parseCSVLine(line);
+        const row = {};
+        headers.forEach((h, idx) => row[h] = (vals[idx] || '').trim().replace(/"/g, ''));
+        const id = row['box_id'].toUpperCase();
+        newData[id] = {
+          species:  row['species'],
+          weight:   row['weight'],
+          grade:    row['grade'],
+          lot:      row['lot_number'],
+          vessel:   row['vessel'],
+          priceKg:  row['price_per_kg'],
+          buyer:    row['buyer_name'],
+          buyerLoc: row['buyer_location']
+        };
+      }
+      const count = Object.keys(newData).length;
+      if (count === 0) throw new Error('No valid rows found in file');
+      AUCTION_DATA = newData;
+      usingLiveData = true;
+      printed = 0;
+      document.getElementById('stat-printed').textContent = 0;
+      rebuildChips();
+      document.getElementById('data-mode-badge').className = 'csv-using-live';
+      document.getElementById('data-mode-badge').textContent = '✅ Live data loaded — ' + count + ' boxes from ' + file.name;
+      document.getElementById('header-sub').textContent = 'Box Label Scanner — Live data';
+      document.getElementById('chips-label').textContent = 'TODAY\'S BOXES — tap to look up';
+      showCSVStatus('success', '✅ Loaded ' + count + ' boxes successfully from ' + file.name);
+      clearResult();
+    } catch(err) {
+      showCSVStatus('error', '❌ Error: ' + err.message + '. Please check the file matches the template.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQuotes = !inQuotes; }
+    else if (line[i] === ',' && !inQuotes) { result.push(current); current = ''; }
+    else { current += line[i]; }
+  }
+  result.push(current);
+  return result;
+}
+
+function showCSVStatus(type, msg) {
+  const el = document.getElementById('csv-status');
+  el.className = 'csv-status show ' + type;
+  el.textContent = msg;
+  setTimeout(() => el.classList.remove('show'), 6000);
+}
+
+function resetToDemo() {
+  AUCTION_DATA = Object.assign({}, DEMO_DATA);
+  usingLiveData = false;
+  printed = 0;
+  document.getElementById('stat-printed').textContent = 0;
+  rebuildChips();
+  document.getElementById('data-mode-badge').className = 'csv-using-demo';
+  document.getElementById('data-mode-badge').textContent = '⚠️ Using demo data — load a real CSV to begin';
+  document.getElementById('header-sub').textContent = 'Box Label Scanner — Demo data';
+  document.getElementById('chips-label').textContent = 'DEMO — tap a box to try it';
+  clearResult();
+}
+
+// ── Template download ──
+function downloadTemplate() {
+  const header = 'box_id,species,weight,grade,lot_number,vessel,price_per_kg,buyer_name,buyer_location';
+  const rows = [
+    'BX-001,Sole,18kg,A,L-2201,Ocean Harvest,£8.40,Plymouth Fish Co.,Plymouth Devon',
+    'BX-002,Cod,22kg,A,L-2202,Silver Fin,£4.20,Brixham Seafoods Ltd,Brixham Devon',
+    'BX-003,Plaice,15kg,B,L-2203,Ocean Harvest,£3.10,Torbay Fish Market,Torquay Devon',
+  ];
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'neptune-export-template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Camera ──
 function toggleCamera() {
   if (stream) { stopCamera(); return; }
   navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -237,7 +387,7 @@ function toggleCamera() {
       scanning = true;
       video.onloadedmetadata = () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; tick(); };
     })
-    .catch(() => alert('Camera not available on this device/browser. Use the manual lookup or demo buttons instead.'));
+    .catch(() => alert('Camera not available on this device/browser. Use the manual lookup instead.'));
 }
 
 function stopCamera() {
@@ -264,6 +414,7 @@ function tick() {
   rafId = requestAnimationFrame(tick);
 }
 
+// ── Lookup ──
 function manualLookup() {
   const val = document.getElementById('manual-input').value.trim().toUpperCase();
   if (val) showResult(val);
@@ -302,7 +453,7 @@ function printLabel() {
   btn.disabled = true;
   printed++;
   document.getElementById('stat-printed').textContent = printed;
-  document.getElementById('stat-pending').textContent = Math.max(0, 12 - printed);
+  document.getElementById('stat-pending').textContent = Math.max(0, Object.keys(AUCTION_DATA).length - printed);
   setTimeout(() => {
     btn.textContent = '🖨️ Print label (Zebra)';
     btn.className = 'btn btn-blue';
