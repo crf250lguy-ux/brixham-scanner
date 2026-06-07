@@ -31,7 +31,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .header-right span{font-size:11px;color:rgba(255,255,255,0.7);}
 .signout-btn{font-size:11px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;}
 .back-btn{font-size:12px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-bottom:4px;}
-.menu-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.menu-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
 .mstat{background:white;border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
 .mstat .s-num{font-size:20px;font-weight:700;color:#0C447C;}
 .mstat .s-lbl{font-size:10px;color:#6b7280;margin-top:2px;}
@@ -58,7 +58,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .btn-grey{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
 .btn-green{background:#166534;color:white;}
 .btn-indigo{background:#4f46e5;color:white;}.btn-indigo:hover{background:#4338ca;}
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
 .stat{background:white;border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
 .stat .s-num{font-size:22px;font-weight:600;color:#0C447C;}.stat .s-lbl{font-size:11px;color:#6b7280;margin-top:2px;}
 .video-frame{width:100%;aspect-ratio:1;background:#111827;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
@@ -209,9 +209,10 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div class="header-right"><button class="back-btn" onclick="goTo('menu-screen')">&#8592; Menu</button><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
   <div class="stats-row">
-    <div class="stat"><div class="s-num" id="t-total">12</div><div class="s-lbl">Boxes today</div></div>
-    <div class="stat"><div class="s-num" id="t-printed">0</div><div class="s-lbl">Printed</div></div>
-    <div class="stat"><div class="s-num" id="t-pending">12</div><div class="s-lbl">Pending</div></div>
+    <div class="stat" onclick="goTo('boxes-screen')" style="cursor:pointer;"><div class="s-num" id="t-total">0</div><div class="s-lbl">Boxes today</div></div>
+    <div class="stat" onclick="goTo('printed-screen')" style="cursor:pointer;"><div class="s-num" id="t-printed">0</div><div class="s-lbl">Printed</div></div>
+    <div class="stat"><div class="s-num" id="t-pending">0</div><div class="s-lbl">Pending</div></div>
+    <div class="stat"><div class="s-num" id="t-sold">0</div><div class="s-lbl">Boxes sold</div></div>
   </div>
   <div class="card">
     <h2>&#128247; Scan box QR code</h2>
@@ -265,6 +266,8 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
       </div>
     </div>
 
+  </div>
+  </div>
   </div>
 </div></div>
 
@@ -850,7 +853,7 @@ const DEMO_DATA={
 };
 let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={};
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
-function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0);if(id==="menu-screen")updateMenuStats();if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();}
+function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=document.getElementById(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=document.getElementById("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();if(id==="search-screen"){document.getElementById("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");}
 function doLogin(){const user=document.getElementById("li-user").value.trim().toLowerCase(),pass=document.getElementById("li-pass").value,err=document.getElementById("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");document.getElementById("menu-username").textContent=user;document.getElementById("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
     const dataTile=document.getElementById("data-tile");
     if(dataTile)dataTile.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
@@ -858,7 +861,7 @@ function doLogin(){const user=document.getElementById("li-user").value.trim().to
 function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();document.getElementById("li-user").value="";document.getElementById("li-pass").value="";document.getElementById("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById("login-screen").classList.add("active");}
 document.getElementById("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 document.getElementById("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("li-pass").focus();});
-function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;document.getElementById("ms-boxes").textContent=total;document.getElementById("ms-printed").textContent=printed;document.getElementById("ms-flags").textContent=flags.length;document.getElementById("t-total").textContent=total;document.getElementById("t-printed").textContent=printed;document.getElementById("t-pending").textContent=Math.max(0,total-printed);const nb=document.getElementById("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");}
+function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;document.getElementById("ms-boxes").textContent=total;document.getElementById("ms-printed").textContent=printed;document.getElementById("ms-flags").textContent=flags.length;document.getElementById("t-total").textContent=total;document.getElementById("t-printed").textContent=printed;document.getElementById("t-pending").textContent=Math.max(0,total-printed);const nb=document.getElementById("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");const tSoldEl=document.getElementById("t-sold");if(tSoldEl)tSoldEl.textContent=getSoldCount();}else nb.classList.remove("show");}
 function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();ignoredBoxIds=new Set();customTickets={};
   updateMenuStats();
 }
@@ -1134,10 +1137,10 @@ function printAll(){
 function runSearch(){
   const q=document.getElementById("srch-input").value.trim().toLowerCase();
   const container=document.getElementById("srch-results");
-  if(!q){container.innerHTML="";return;}
-  const matches=Object.entries(AUCTION_DATA).filter(([id,b])=>
+  const allEntries=Object.entries(AUCTION_DATA).sort((a,b)=>a[1].species.localeCompare(b[1].species));
+  const matches=q?allEntries.filter(([id,b])=>
     b.species.toLowerCase().includes(q)||id.toLowerCase().includes(q)||b.vessel.toLowerCase().includes(q)||b.buyer.toLowerCase().includes(q)
-  ).sort((a,b)=>a[1].species.localeCompare(b[1].species));
+  ):allEntries;
   if(matches.length===0){
     container.innerHTML="<div style='background:white;border-radius:14px;padding:1.5rem;text-align:center;color:#6b7280;font-size:14px;box-shadow:0 1px 3px rgba(0,0,0,0.07);'>No boxes found.</div>";
     return;
@@ -1541,7 +1544,7 @@ function flagModalCustom(){
 
 function openBlankCustomTicket(){
   // Clear all fields
-  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{document.getElementById(id).value="";});
+  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   document.getElementById("ct-date").textContent=new Date().toLocaleDateString("en-GB");
   document.getElementById("ct-prev-boxid").textContent="CUSTOM";
   document.getElementById("ct-error").style.display="none";
@@ -1575,7 +1578,8 @@ function flagChangeBuyer(){
 
 function updateCustomPreview(){
   const ctSpeciesEl=document.getElementById("ct-prev-species");
-  const ctSpeciesVal=document.getElementById("ct-species")?document.getElementById("ct-species").value.toUpperCase():"";
+  const ctSpeciesInput=document.getElementById("ct-species");
+  const ctSpeciesVal=ctSpeciesInput?ctSpeciesInput.value.toUpperCase():"";
   if(ctSpeciesEl)ctSpeciesEl.textContent=ctSpeciesVal||"—";
   const vessel=document.getElementById("ct-vessel").value||"—";
   const weight=document.getElementById("ct-weight").value||"—";
@@ -1593,10 +1597,12 @@ function updateCustomPreview(){
 
 // Live preview updates - called after DOM is ready
 function initCustomTicketListeners(){
-  ["ct-vessel","ct-weight","ct-grade","ct-buyer"].forEach(id=>{
+  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{
     const el=document.getElementById(id);
-    if(el)el.addEventListener("input", updateCustomPreview);
+    if(el)el.addEventListener("input",updateCustomPreview);
   });
+  const warnEl=document.getElementById("ct-issue-warning");
+  if(warnEl)warnEl.addEventListener("change",updateCustomPreview);
 }
 
 function printCustomTicket(){
@@ -1658,7 +1664,7 @@ function printCustomTicket(){
 function closeCustomTicket(){
   document.getElementById("custom-ticket-overlay").style.display="none";
   // Clear fields
-  ["ct-vessel","ct-weight","ct-grade","ct-buyer"].forEach(id=>{document.getElementById(id).value="";});
+  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   document.getElementById("ct-error").style.display="none";
 }
 
@@ -1712,7 +1718,7 @@ document.addEventListener("click",function(e){
 
 
 // ── Boxes sold count ──
-function getSoldCount(){return Object.keys(AUCTION_DATA).length;}
+function getSoldCount(){return Object.values(AUCTION_DATA).filter(b=>b.buyer&&b.buyer.length>0).length;}
 
 // ── Render box list (boxes today screen) ──
 function renderBoxList(orderBy){
