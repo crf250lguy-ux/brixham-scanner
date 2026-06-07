@@ -244,11 +244,6 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
       <div class="detail-item"><label>Vessel</label><span id="t-vessel">-</span></div>
     </div>
     <div class="buyer-section"><div class="buyer-label">Buyer</div><div class="buyer-name" id="t-buyer">-</div><div class="buyer-loc" id="t-buyerloc">-</div></div>
-    <div id="t-group-section" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:1rem;">
-      <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:8px;">This lot has multiple buyers — select labels to print:</div>
-      <div id="t-group-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-
-    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
       <button class="btn btn-blue" onclick="printLabel()" id="t-print-btn" style="margin-top:0;">Print label (Zebra)</button>
       <button class="btn btn-orange" onclick="flagFromTicket()" style="margin-top:0;">Flag box</button>
@@ -257,6 +252,11 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 
 
 
+    <div id="t-group-section" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:1rem;">
+      <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-bottom:8px;">This lot has multiple buyers — select labels to print:</div>
+      <div id="t-group-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+
+    </div>
     <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:6px;">LABEL PREVIEW</div>
     <div class="label-section">
       <div class="label-header"><span>BRIXHAM FISH MARKET</span><span id="t-lp-date">-</span></div>
@@ -853,35 +853,62 @@ const DEMO_DATA={
 };
 let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={};
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
-function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=document.getElementById(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=document.getElementById("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();if(id==="search-screen"){document.getElementById("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");}
-function doLogin(){const user=document.getElementById("li-user").value.trim().toLowerCase(),pass=document.getElementById("li-pass").value,err=document.getElementById("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");document.getElementById("menu-username").textContent=user;document.getElementById("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
-    const dataTile=document.getElementById("data-tile");
+function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();if(id==="search-screen"){getEl("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");}
+function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=getEl("li-pass").value,err=getEl("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");getEl("menu-username").textContent=user;getEl("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
+    const dataTile=getEl("data-tile");
     if(dataTile)dataTile.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
-    goTo("menu-screen");}else{err.classList.add("show");document.getElementById("li-pass").value="";}}
-function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();document.getElementById("li-user").value="";document.getElementById("li-pass").value="";document.getElementById("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById("login-screen").classList.add("active");}
-document.getElementById("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-document.getElementById("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("li-pass").focus();});
-function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;document.getElementById("ms-boxes").textContent=total;document.getElementById("ms-printed").textContent=printed;document.getElementById("ms-flags").textContent=flags.length;document.getElementById("t-total").textContent=total;document.getElementById("t-printed").textContent=printed;document.getElementById("t-pending").textContent=Math.max(0,total-printed);const nb=document.getElementById("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");const tSoldEl=document.getElementById("t-sold");if(tSoldEl)tSoldEl.textContent=getSoldCount();}else nb.classList.remove("show");}
+    goTo("menu-screen");}else{err.classList.add("show");getEl("li-pass").value="";}}
+function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
+getEl("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+getEl("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")getEl("li-pass").focus();});
+function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;getEl("ms-boxes").textContent=total;getEl("ms-printed").textContent=printed;getEl("ms-flags").textContent=flags.length;getEl("t-total").textContent=total;getEl("t-printed").textContent=printed;getEl("t-pending").textContent=Math.max(0,total-printed);const nb=getEl("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");const tSoldEl=getEl("t-sold");if(tSoldEl)tSoldEl.textContent=getSoldCount();}else nb.classList.remove("show");}
 function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();ignoredBoxIds=new Set();customTickets={};
   updateMenuStats();
 }
-function toggleCamera(prefix){if(streams[prefix]){stopCamera(prefix);return;}const vid=document.getElementById(prefix+"-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{streams[prefix]=s;vid.srcObject=s;vid.style.display="block";document.getElementById(prefix+"-cam-icon").style.display="none";document.getElementById(prefix+"-cam-label").style.display="none";document.getElementById(prefix+"-scanner-line").style.display="block";document.getElementById(prefix+"-cam-btn").textContent="Stop camera";document.getElementById(prefix+"-cam-btn").className="btn btn-red";document.getElementById(prefix+"-scan-bar").classList.add("show");scannings[prefix]=true;const can=document.getElementById(prefix+"-canvas");vid.onloadedmetadata=()=>{can.width=vid.videoWidth;can.height=vid.videoHeight;tick(prefix);};}).catch(()=>alert("Camera not available. Use manual lookup instead."));}
-function stopCamera(prefix){scannings[prefix]=false;if(rafIds[prefix])cancelAnimationFrame(rafIds[prefix]);if(streams[prefix]){streams[prefix].getTracks().forEach(t=>t.stop());streams[prefix]=null;}const vid=document.getElementById(prefix+"-video");if(!vid)return;vid.style.display="none";document.getElementById(prefix+"-cam-icon").style.display="";document.getElementById(prefix+"-cam-label").style.display="";document.getElementById(prefix+"-scanner-line").style.display="none";document.getElementById(prefix+"-cam-btn").textContent="Start camera";document.getElementById(prefix+"-cam-btn").className="btn btn-blue";document.getElementById(prefix+"-scan-bar").classList.remove("show");}
-function tick(prefix){if(!scannings[prefix])return;const vid=document.getElementById(prefix+"-video"),can=document.getElementById(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}rafIds[prefix]=requestAnimationFrame(()=>tick(prefix));}
-function ticketLookup(){const val=document.getElementById("t-search").value.trim().toUpperCase();if(val)showTicketResult(val);}
-document.addEventListener("keydown",function(e){if(e.key==="Enter"&&document.getElementById("t-search")===document.activeElement)ticketLookup();});
+function getEl(id){return document.getElementById(id);}
+function parseWeight(w){return parseFloat((w||"").replace(/[^0-9.]/g,""))||0;}
+function getGroupBoxes(groupId){return Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===groupId);}
+function getFullWeight(groupBoxes){const wc={};groupBoxes.forEach(([id,b])=>{wc[b.weight]=(wc[b.weight]||0)+1;});const top=Object.entries(wc).sort((a,b)=>b[1]-a[1])[0];return top?top[0]:"";}
+function buildTicketMap(groupBoxes,fullBoxWeight){
+  const map={};
+  groupBoxes.forEach(([id,b])=>{
+    const isPart=b.weight!==fullBoxWeight;
+    const ct=customTickets[id];
+    const isFlagged=flaggedBoxIds.has(id);
+    if(ct){
+      const k="custom__"+id;
+      if(!map[k])map[k]={buyer:ct.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,species:b.species,grade:ct.grade,vessel:ct.vessel,lot:b.lot,isPart,isCustom:true,originalBuyer:b.buyer};
+      map[k].boxes.push(id);map[k].totalKg+=parseWeight(ct.weight);
+    } else if(isFlagged){
+      const k="flagged__"+id;
+      if(!map[k])map[k]={buyer:b.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,species:b.species,grade:b.grade,vessel:b.vessel,lot:b.lot,isPart,isFlaggedRow:true};
+      map[k].boxes.push(id);map[k].totalKg+=parseWeight(b.weight);
+    } else {
+      const k=isPart?id+"__part":b.buyer+"__full";
+      if(!map[k])map[k]={buyer:b.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,species:b.species,grade:b.grade,vessel:b.vessel,lot:b.lot,isPart};
+      map[k].boxes.push(id);map[k].totalKg+=parseWeight(b.weight);
+    }
+  });
+  return map;
+}
+
+function toggleCamera(prefix){if(streams[prefix]){stopCamera(prefix);return;}const vid=getEl(prefix+"-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{streams[prefix]=s;vid.srcObject=s;vid.style.display="block";getEl(prefix+"-cam-icon").style.display="none";getEl(prefix+"-cam-label").style.display="none";getEl(prefix+"-scanner-line").style.display="block";getEl(prefix+"-cam-btn").textContent="Stop camera";getEl(prefix+"-cam-btn").className="btn btn-red";getEl(prefix+"-scan-bar").classList.add("show");scannings[prefix]=true;const can=getEl(prefix+"-canvas");vid.onloadedmetadata=()=>{can.width=vid.videoWidth;can.height=vid.videoHeight;tick(prefix);};}).catch(()=>alert("Camera not available. Use manual lookup instead."));}
+function stopCamera(prefix){scannings[prefix]=false;if(rafIds[prefix])cancelAnimationFrame(rafIds[prefix]);if(streams[prefix]){streams[prefix].getTracks().forEach(t=>t.stop());streams[prefix]=null;}const vid=getEl(prefix+"-video");if(!vid)return;vid.style.display="none";getEl(prefix+"-cam-icon").style.display="";getEl(prefix+"-cam-label").style.display="";getEl(prefix+"-scanner-line").style.display="none";getEl(prefix+"-cam-btn").textContent="Start camera";getEl(prefix+"-cam-btn").className="btn btn-blue";getEl(prefix+"-scan-bar").classList.remove("show");}
+function tick(prefix){if(!scannings[prefix])return;const vid=getEl(prefix+"-video"),can=getEl(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}rafIds[prefix]=requestAnimationFrame(()=>tick(prefix));}
+function ticketLookup(){const val=getEl("t-search").value.trim().toUpperCase();if(val)showTicketResult(val);}
+document.addEventListener("keydown",function(e){if(e.key==="Enter"&&getEl("t-search")===document.activeElement)ticketLookup();});
 
 function showTicketResult(boxId){
-  document.getElementById("t-error").classList.remove("show");
-  document.getElementById("t-result").classList.remove("show");
+  getEl("t-error").classList.remove("show");
+  getEl("t-result").classList.remove("show");
   const box=AUCTION_DATA[boxId];
-  if(!box){document.getElementById("t-error").classList.add("show");return;}
-  document.getElementById("t-actual-boxid").value=boxId;
+  if(!box){getEl("t-error").classList.add("show");return;}
+  getEl("t-actual-boxid").value=boxId;
   const today=new Date().toLocaleDateString("en-GB");
 
   if(box.groupId){
     // Show group representative ID (lowest numbered box in group)
-    const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
+    const groupBoxes=getGroupBoxes(box.groupId);
     const repId=groupBoxes.map(([id])=>id).sort()[0];
     // Find full box weight
     const wCounts={};
@@ -892,50 +919,50 @@ function showTicketResult(boxId){
     const wBreakdown={};
     groupBoxes.forEach(([id,b])=>{wBreakdown[b.weight]=(wBreakdown[b.weight]||0)+1;});
     const breakdownStr=Object.entries(wBreakdown).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
-    document.getElementById("t-boxid").textContent=repId+" (scanned: "+boxId+")";
-    document.getElementById("t-species").textContent=box.species;
-    document.getElementById("t-weight").textContent=totalKg+"kg total — "+breakdownStr;
-    document.getElementById("t-grade").textContent=box.grade;
-    document.getElementById("t-size").textContent=box.size||"-";
-    document.getElementById("t-lot").textContent=box.lot+"/"+boxId;
-    document.getElementById("t-vessel").textContent=box.vessel;
+    getEl("t-boxid").textContent=repId+" (scanned: "+boxId+")";
+    getEl("t-species").textContent=box.species;
+    getEl("t-weight").textContent=totalKg+"kg total — "+breakdownStr;
+    getEl("t-grade").textContent=box.grade;
+    getEl("t-size").textContent=box.size||"-";
+    getEl("t-lot").textContent=box.lot+"/"+boxId;
+    getEl("t-vessel").textContent=box.vessel;
     const uniqueBuyerCount=new Set(groupBoxes.map(([id,b])=>b.buyer)).size;
     const totalBoxCount=groupBoxes.length;
-    document.getElementById("t-buyer").textContent=uniqueBuyerCount+" buyer"+(uniqueBuyerCount>1?"s":"")+" — "+totalBoxCount+" boxes total (see below)";
-    document.getElementById("t-buyerloc").textContent="";
+    getEl("t-buyer").textContent=uniqueBuyerCount+" buyer"+(uniqueBuyerCount>1?"s":"")+" — "+totalBoxCount+" boxes total (see below)";
+    getEl("t-buyerloc").textContent="";
   } else {
-    document.getElementById("t-boxid").textContent=boxId;
-    document.getElementById("t-species").textContent=box.species;
-    document.getElementById("t-weight").textContent=box.weight;
-    document.getElementById("t-grade").textContent=box.grade;
-    document.getElementById("t-size").textContent=box.size||"-";
-    document.getElementById("t-lot").textContent=box.lot;
-    document.getElementById("t-vessel").textContent=box.vessel;
+    getEl("t-boxid").textContent=boxId;
+    getEl("t-species").textContent=box.species;
+    getEl("t-weight").textContent=box.weight;
+    getEl("t-grade").textContent=box.grade;
+    getEl("t-size").textContent=box.size||"-";
+    getEl("t-lot").textContent=box.lot;
+    getEl("t-vessel").textContent=box.vessel;
     const singleCustom=customTickets[boxId];
-    document.getElementById("t-buyer").textContent=singleCustom?""+singleCustom.buyer+" (custom — was: "+box.buyer+")":box.buyer;
-    document.getElementById("t-buyerloc").textContent=box.buyerLoc;
+    getEl("t-buyer").textContent=singleCustom?""+singleCustom.buyer+" (custom — was: "+box.buyer+")":box.buyer;
+    getEl("t-buyerloc").textContent=box.buyerLoc;
     // Update label preview with custom data if available
     if(singleCustom){
-      document.getElementById("t-lp-details").textContent=singleCustom.weight+" | Grade "+singleCustom.grade+" | "+singleCustom.vessel;
-      document.getElementById("t-lp-buyer").textContent=singleCustom.buyer+" (custom)";
+      getEl("t-lp-details").textContent=singleCustom.weight+" | Grade "+singleCustom.grade+" | "+singleCustom.vessel;
+      getEl("t-lp-buyer").textContent=singleCustom.buyer+" (custom)";
     }
   }
   const today2=new Date().toLocaleDateString("en-GB");
-  document.getElementById("t-lp-date").textContent=today2;
-  document.getElementById("t-lp-species").textContent=box.species.toUpperCase()+(box.size?" ("+box.size+")":"");
-  document.getElementById("t-lp-details").textContent=box.weight+" | Grade "+box.grade+" | Size "+box.size+" | "+box.vessel;
-  document.getElementById("t-lp-buyer").textContent=box.buyer;
-  document.getElementById("t-lp-box").textContent=boxId;
-  document.getElementById("t-lp-lot").textContent=box.lot+"/"+boxId;
-  const groupSection=document.getElementById("t-group-section");
-  const groupList=document.getElementById("t-group-list");
-  const printBtn=document.getElementById("t-print-btn");
-  const actualId=document.getElementById("t-actual-boxid").value||boxId;
+  getEl("t-lp-date").textContent=today2;
+  getEl("t-lp-species").textContent=box.species.toUpperCase()+(box.size?" ("+box.size+")":"");
+  getEl("t-lp-details").textContent=box.weight+" | Grade "+box.grade+" | Size "+box.size+" | "+box.vessel;
+  getEl("t-lp-buyer").textContent=box.buyer;
+  getEl("t-lp-box").textContent=boxId;
+  getEl("t-lp-lot").textContent=box.lot+"/"+boxId;
+  const groupSection=getEl("t-group-section");
+  const groupList=getEl("t-group-list");
+  const printBtn=getEl("t-print-btn");
+  const actualId=getEl("t-actual-boxid").value||boxId;
   if(box.groupId){
     const groupKey="group_"+box.groupId;
     printBtn.textContent=printedBoxIds.has(groupKey)?"Reprint all labels":"Print all labels";
     printBtn.onclick=printAll;
-    const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
+    const groupBoxes=getGroupBoxes(box.groupId);
     groupList.innerHTML="";
     // Consolidate by buyer+weight - full boxes of same weight consolidate, part boxes stay separate
     const ticketMap={};
@@ -963,14 +990,14 @@ function showTicketResult(boxId){
         if(!ticketMap[flagKey])ticketMap[flagKey]={buyer:b.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,
           species:b.species,grade:b.grade,vessel:b.vessel,lot:b.lot,isPart:!isFullBox,isFlaggedRow:true};
         ticketMap[flagKey].boxes.push(id);
-        ticketMap[flagKey].totalKg+=parseFloat(b.weight.replace(/[^0-9.]/g,""))||0;
+        ticketMap[flagKey].totalKg+=parseWeight(b.weight);
       } else {
         // Normal box - group by buyer
         const key=isFullBox?b.buyer+"__full":id+"__part";
         if(!ticketMap[key])ticketMap[key]={buyer:b.buyer,buyerLoc:b.buyerLoc,boxes:[],totalKg:0,
           species:b.species,grade:b.grade,vessel:b.vessel,lot:b.lot,isPart:!isFullBox};
         ticketMap[key].boxes.push(id);
-        ticketMap[key].totalKg+=parseFloat(b.weight.replace(/[^0-9.]/g,""))||0;
+        ticketMap[key].totalKg+=parseWeight(b.weight);
       }
     });
     groupList.innerHTML="";
@@ -1055,24 +1082,24 @@ function showTicketResult(boxId){
       printBtn.onclick=printLabel;
     }
   }
-  document.getElementById("t-result").classList.add("show");
-  setTimeout(()=>document.getElementById("t-result").scrollIntoView({behavior:"smooth",block:"start"}),100);
+  getEl("t-result").classList.add("show");
+  setTimeout(()=>getEl("t-result").scrollIntoView({behavior:"smooth",block:"start"}),100);
 }
 
 function printConsolidated(btn,data){
   const today=new Date().toLocaleDateString("en-GB");
   const count=parseInt(data.count)||1;
-  document.getElementById("t-lp-species").textContent=data.species.toUpperCase();
+  getEl("t-lp-species").textContent=data.species.toUpperCase();
   // Build breakdown for label preview
   const bxIds=data.boxes.split(",");
   const lpWCounts={};
   bxIds.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)lpWCounts[bx.weight]=(lpWCounts[bx.weight]||0)+1;});
   const lpBreakdown=Object.entries(lpWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
-  document.getElementById("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
-  document.getElementById("t-lp-buyer").textContent=data.buyer;
-  document.getElementById("t-lp-box").textContent=count>1?count+"x":data.boxes;
-  document.getElementById("t-lp-lot").textContent=data.lot;
-  document.getElementById("t-lp-date").textContent=today;
+  getEl("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
+  getEl("t-lp-buyer").textContent=data.buyer;
+  getEl("t-lp-box").textContent=count>1?count+"x":data.boxes;
+  getEl("t-lp-lot").textContent=data.lot;
+  getEl("t-lp-date").textContent=today;
   const ticketKey=data.buyer+"__"+data.boxes;
   const alreadyPrinted=printedTicketKeys.has(ticketKey);
   if(!alreadyPrinted){
@@ -1101,13 +1128,11 @@ function printConsolidated(btn,data){
 }
 
 function printAll(){
-  const actualBoxId=document.getElementById("t-actual-boxid").value;
+  const actualBoxId=getEl("t-actual-boxid").value;
   const box=AUCTION_DATA[actualBoxId];
   if(!box||!box.groupId)return;
-  const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
-  const weightCounts={};
-  groupBoxes.forEach(([id,b])=>{weightCounts[b.weight]=(weightCounts[b.weight]||0)+1;});
-  const fullBoxWeight=Object.entries(weightCounts).sort((a,b)=>b[1]-a[1])[0][0];
+  const groupBoxes=getGroupBoxes(box.groupId);
+  const fullBoxWeight=getFullWeight(groupBoxes);
   const ticketKeys=new Set();
   groupBoxes.forEach(([id,b])=>{
     const isFullBox=b.weight===fullBoxWeight;
@@ -1123,7 +1148,7 @@ function printAll(){
     updateMenuStats();
   }
   // Update top button to Printing... then Reprint all labels
-  const topBtn=document.getElementById("t-print-btn");
+  const topBtn=getEl("t-print-btn");
   topBtn.textContent="Printing...";
   topBtn.className="btn btn-green";topBtn.disabled=true;
   // Change all individual Print buttons in the group list to Reprint
@@ -1135,8 +1160,8 @@ function printAll(){
 }
 
 function runSearch(){
-  const q=document.getElementById("srch-input").value.trim().toLowerCase();
-  const container=document.getElementById("srch-results");
+  const q=getEl("srch-input").value.trim().toLowerCase();
+  const container=getEl("srch-results");
   const allEntries=Object.entries(AUCTION_DATA).sort((a,b)=>a[1].species.localeCompare(b[1].species));
   const matches=q?allEntries.filter(([id,b])=>
     b.species.toLowerCase().includes(q)||id.toLowerCase().includes(q)||b.vessel.toLowerCase().includes(q)||b.buyer.toLowerCase().includes(q)
@@ -1189,8 +1214,8 @@ function reprintLabel(boxId,btn){
 }
 
 function printLabel(){
-  const boxId=document.getElementById("t-actual-boxid").value||document.getElementById("t-boxid").textContent;
-  const btn=document.getElementById("t-print-btn");
+  const boxId=getEl("t-actual-boxid").value||getEl("t-boxid").textContent;
+  const btn=getEl("t-print-btn");
   btn.className="btn btn-green";btn.disabled=true;
   if(printedBoxIds.has(boxId)){
     btn.textContent="Printing...";
@@ -1203,28 +1228,28 @@ function printLabel(){
   updateMenuStats();
   setTimeout(()=>{btn.textContent="Reprint label";btn.className="btn btn-blue";btn.disabled=false;},2500);
 }
-function flagFromTicket(){const boxId=document.getElementById("t-actual-boxid").value;stopCamera("t");goTo("flag-screen");showFlagFound(boxId);}
-function clearTicketResult(){document.getElementById("t-result").classList.remove("show");document.getElementById("t-error").classList.remove("show");document.getElementById("t-search").value="";document.getElementById("t-dropdown").innerHTML="";document.getElementById("t-dropdown").style.display="none";document.querySelector("#ticket-screen .app").scrollTo({top:0,behavior:"smooth"});window.scrollTo({top:0,behavior:"smooth"});}
-function flagLookup(){const val=document.getElementById("f-manual").value.trim().toUpperCase();if(val)showFlagFound(val);}
-document.getElementById("f-manual").addEventListener("keydown",e=>{if(e.key==="Enter")flagLookup();});
+function flagFromTicket(){const boxId=getEl("t-actual-boxid").value;stopCamera("t");goTo("flag-screen");showFlagFound(boxId);}
+function clearTicketResult(){getEl("t-result").classList.remove("show");getEl("t-error").classList.remove("show");getEl("t-search").value="";getEl("t-dropdown").innerHTML="";getEl("t-dropdown").style.display="none";document.querySelector("#ticket-screen .app").scrollTo({top:0,behavior:"smooth"});window.scrollTo({top:0,behavior:"smooth"});}
+function flagLookup(){const val=getEl("f-manual").value.trim().toUpperCase();if(val)showFlagFound(val);}
+getEl("f-manual").addEventListener("keydown",e=>{if(e.key==="Enter")flagLookup();});
 function showFlagFound(boxId){
-  document.getElementById("f-error").classList.remove("show");
-  document.getElementById("f-found").classList.remove("show");
-  document.getElementById("f-success").classList.remove("show");
+  getEl("f-error").classList.remove("show");
+  getEl("f-found").classList.remove("show");
+  getEl("f-success").classList.remove("show");
   const box=AUCTION_DATA[boxId];
-  if(!box){document.getElementById("f-error").classList.add("show");return;}
-  document.getElementById("f-boxid").textContent=boxId;
-  document.getElementById("f-actual-boxid").value=boxId;
+  if(!box){getEl("f-error").classList.add("show");return;}
+  getEl("f-boxid").textContent=boxId;
+  getEl("f-actual-boxid").value=boxId;
   const actualFlagBoxId=boxId;
-  document.getElementById("f-boxname").textContent=box.species+" - "+box.weight+" - "+box.vessel;
+  getEl("f-boxname").textContent=box.species+" - "+box.weight+" - "+box.vessel;
   selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;selectedFlagBuyerBoxes=[];
   document.querySelectorAll(".issue-btn").forEach(b=>b.classList.remove("selected"));
-  document.getElementById("f-notes").value="";
+  getEl("f-notes").value="";
   // If grouped box, show buyer selector
-  const buyerSection=document.getElementById("f-buyer-section");
-  const buyerList=document.getElementById("f-buyer-list");
+  const buyerSection=getEl("f-buyer-section");
+  const buyerList=getEl("f-buyer-list");
   if(box.groupId){
-    const groupBoxes=Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===box.groupId);
+    const groupBoxes=getGroupBoxes(box.groupId);
     // Find full box weight
     const wCounts={};
     groupBoxes.forEach(([id,b])=>{wCounts[b.weight]=(wCounts[b.weight]||0)+1;});
@@ -1240,7 +1265,7 @@ function showFlagFound(boxId){
     groupBoxes.forEach(([id,b])=>{
       if(!buyerMap2[b.buyer])buyerMap2[b.buyer]={buyerLoc:b.buyerLoc,boxes:[],totalKg:0};
       buyerMap2[b.buyer].boxes.push(id);
-      buyerMap2[b.buyer].totalKg+=parseFloat(b.weight.replace(/[^0-9.]/g,""))||0;
+      buyerMap2[b.buyer].totalKg+=parseWeight(b.weight);
     });
     // Render buyer rows - tap to expand box list
     Object.entries(buyerMap2).forEach(([buyer,entry])=>{
@@ -1306,8 +1331,8 @@ function showFlagFound(boxId){
     selectedFlagBuyerLoc=box.buyerLoc;
     selectedFlagBuyerBoxes=[actualFlagBoxId||boxId];
   }
-  document.getElementById("f-found").classList.add("show");
-  document.getElementById("f-found").scrollIntoView({behavior:"smooth",block:"start"});
+  getEl("f-found").classList.add("show");
+  getEl("f-found").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function selectIssue(btn,issue){
   btn.classList.toggle("selected");
@@ -1316,12 +1341,12 @@ function selectIssue(btn,issue){
   selectedIssue=selected.join(", ");
 }
 function submitFlag(){
-  const actualFlagBoxId=document.getElementById("f-actual-boxid").value||document.getElementById("f-boxid").textContent;
+  const actualFlagBoxId=getEl("f-actual-boxid").value||getEl("f-boxid").textContent;
   const box=AUCTION_DATA[actualFlagBoxId];
   if(box&&box.groupId&&selectedFlagBuyerBoxes.length===0){alert("Please select at least one box.");return;}
   if(!selectedIssue){alert("Please select a problem type.");return;}
   if(selectedIssue==="Change buyer"){flagChangeBuyer();return;}
-  const notes=document.getElementById("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+  const notes=getEl("f-notes").value.trim(),now=new Date(),timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   const affectedBoxIds=selectedFlagBuyerBoxes.length>0?selectedFlagBuyerBoxes:[actualFlagBoxId];
   const displayBoxId=affectedBoxIds.length>1?affectedBoxIds.join(", "):affectedBoxIds[0];
   const buyerInfo=selectedFlagBuyer?" — Buyer: "+selectedFlagBuyer:"";
@@ -1337,61 +1362,60 @@ function submitFlag(){
     if(!printedBoxIds.has(id)){printedBoxIds.add(id);printed=printedBoxIds.size;}
   });
 
-
   updateMenuStats();
-  document.getElementById("f-found").classList.remove("show");
+  getEl("f-found").classList.remove("show");
   // Show modal asking what to do with the ticket
-  const modal=document.getElementById("flag-modal-overlay");
-  document.getElementById("flag-modal-msg").textContent="Box "+displayBoxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
+  const modal=getEl("flag-modal-overlay");
+  getEl("flag-modal-msg").textContent="Box "+displayBoxId+(selectedFlagBuyer?" ("+selectedFlagBuyer+")":"")+": "+selectedIssue+". The auctioneer has been notified.";
   modal.style.display="flex";
   modal.dataset.boxid=affectedBoxIds[0];
   modal.dataset.allboxids=affectedBoxIds.join(",");
   modal.dataset.returnboxid=actualFlagBoxId;
-  document.getElementById("f-manual").value="";capturedPhotoData=null;
+  getEl("f-manual").value="";capturedPhotoData=null;
 }
 
 function returnToBoxInfo(){
-  const returnId=document.getElementById("flag-modal-overlay").dataset.returnboxid;
+  const returnId=getEl("flag-modal-overlay").dataset.returnboxid;
   if(returnId){goTo("ticket-screen");showTicketResult(returnId);}
 }
 
 function flagModalIgnore(){
-  document.getElementById("flag-modal-overlay").style.display="none";
+  getEl("flag-modal-overlay").style.display="none";
   returnToBoxInfo();
 }
 
 function flagModalRemove(){
-  const allBoxIds=(document.getElementById("flag-modal-overlay").dataset.allboxids||document.getElementById("flag-modal-overlay").dataset.boxid||"").split(",").filter(Boolean);
+  const allBoxIds=(getEl("flag-modal-overlay").dataset.allboxids||getEl("flag-modal-overlay").dataset.boxid||"").split(",").filter(Boolean);
   allBoxIds.forEach(id=>{
     flaggedBoxIds.add(id); // grey out print button
     ignoredBoxIds.add(id); // mark as ignored - no label needed
     if(!printedBoxIds.has(id)){printedBoxIds.add(id);printed=printedBoxIds.size;}
   });
   updateMenuStats();
-  document.getElementById("flag-modal-overlay").style.display="none";
+  getEl("flag-modal-overlay").style.display="none";
   returnToBoxInfo();
 }
 
 function flagModalKeep(){
-  document.getElementById("flag-modal-overlay").style.display="none";
+  getEl("flag-modal-overlay").style.display="none";
   returnToBoxInfo();
 }
 
 function flagModalDismiss(){
   // Go back to the flag form
-  document.getElementById("flag-modal-overlay").style.display="none";
-  document.getElementById("f-found").classList.add("show");
+  getEl("flag-modal-overlay").style.display="none";
+  getEl("f-found").classList.add("show");
 }
-function clearFlagForm(){document.getElementById("f-found").classList.remove("show");document.getElementById("f-error").classList.remove("show");document.getElementById("f-success").classList.remove("show");document.getElementById("f-manual").value="";selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;document.getElementById("f-buyer-section").style.display="none";document.getElementById("f-buyer-list").innerHTML="";stopPhotoCamera();capturedPhotoData=null;document.getElementById("f-photo-preview").style.display="none";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="";document.getElementById("f-photo-btn").style.display="block";document.getElementById("f-photo-btn").textContent="Open camera";document.getElementById("f-photo-btn").className="btn btn-grey";document.getElementById("f-capture-btn").style.display="none";}
-function togglePhotoCamera(){if(photoStream){stopPhotoCamera();return;}const vid=document.getElementById("f-photo-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{photoStream=s;vid.srcObject=s;vid.style.display="block";document.getElementById("f-photo-icon").style.display="none";document.getElementById("f-photo-label").style.display="none";document.getElementById("f-photo-btn").textContent="✕ Close camera";document.getElementById("f-photo-btn").className="btn btn-red";document.getElementById("f-capture-btn").style.display="block";}).catch(()=>alert("Camera not available."));}
-function stopPhotoCamera(){if(photoStream){photoStream.getTracks().forEach(t=>t.stop());photoStream=null;}const vid=document.getElementById("f-photo-video");if(!vid)return;vid.style.display="none";document.getElementById("f-photo-icon").style.display="";document.getElementById("f-photo-label").style.display="";document.getElementById("f-photo-btn").textContent="Open camera";document.getElementById("f-photo-btn").className="btn btn-grey";document.getElementById("f-capture-btn").style.display="none";}
-function capturePhoto(){const vid=document.getElementById("f-photo-video"),can=document.getElementById("f-photo-canvas");can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext("2d").drawImage(vid,0,0);capturedPhotoData=can.toDataURL("image/jpeg",0.8);stopPhotoCamera();document.getElementById("f-photo-img").src=capturedPhotoData;document.getElementById("f-photo-preview").style.display="block";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="none";document.getElementById("f-photo-btn").style.display="none";}
-function retakePhoto(){capturedPhotoData=null;document.getElementById("f-photo-preview").style.display="none";document.getElementById("f-photo-section").querySelector(".video-frame").style.display="";document.getElementById("f-photo-btn").style.display="block";}
+function clearFlagForm(){getEl("f-found").classList.remove("show");getEl("f-error").classList.remove("show");getEl("f-success").classList.remove("show");getEl("f-manual").value="";selectedIssue="";selectedFlagBuyer=null;selectedFlagBuyerLoc=null;getEl("f-buyer-section").style.display="none";getEl("f-buyer-list").innerHTML="";stopPhotoCamera();capturedPhotoData=null;getEl("f-photo-preview").style.display="none";getEl("f-photo-section").querySelector(".video-frame").style.display="";getEl("f-photo-btn").style.display="block";getEl("f-photo-btn").textContent="Open camera";getEl("f-photo-btn").className="btn btn-grey";getEl("f-capture-btn").style.display="none";}
+function togglePhotoCamera(){if(photoStream){stopPhotoCamera();return;}const vid=getEl("f-photo-video");navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{photoStream=s;vid.srcObject=s;vid.style.display="block";getEl("f-photo-icon").style.display="none";getEl("f-photo-label").style.display="none";getEl("f-photo-btn").textContent="✕ Close camera";getEl("f-photo-btn").className="btn btn-red";getEl("f-capture-btn").style.display="block";}).catch(()=>alert("Camera not available."));}
+function stopPhotoCamera(){if(photoStream){photoStream.getTracks().forEach(t=>t.stop());photoStream=null;}const vid=getEl("f-photo-video");if(!vid)return;vid.style.display="none";getEl("f-photo-icon").style.display="";getEl("f-photo-label").style.display="";getEl("f-photo-btn").textContent="Open camera";getEl("f-photo-btn").className="btn btn-grey";getEl("f-capture-btn").style.display="none";}
+function capturePhoto(){const vid=getEl("f-photo-video"),can=getEl("f-photo-canvas");can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext("2d").drawImage(vid,0,0);capturedPhotoData=can.toDataURL("image/jpeg",0.8);stopPhotoCamera();getEl("f-photo-img").src=capturedPhotoData;getEl("f-photo-preview").style.display="block";getEl("f-photo-section").querySelector(".video-frame").style.display="none";getEl("f-photo-btn").style.display="none";}
+function retakePhoto(){capturedPhotoData=null;getEl("f-photo-preview").style.display="none";getEl("f-photo-section").querySelector(".video-frame").style.display="";getEl("f-photo-btn").style.display="block";}
 function canResolve(flag){return currentUser===flag.raisedBy||currentRole==="Admin"||currentRole==="Auctioneer";}
-function toggleNotif(id){const detail=document.getElementById('nd-'+id),chev=document.getElementById('nc-'+id);if(detail){detail.classList.toggle('open');chev.classList.toggle('open');}}
+function toggleNotif(id){const detail=getEl('nd-'+id),chev=getEl('nc-'+id);if(detail){detail.classList.toggle('open');chev.classList.toggle('open');}}
 function renderNotifications(){
-  const list=document.getElementById("notif-list");
-  const clearBtn=document.getElementById("clear-resolved-btn");
+  const list=getEl("notif-list");
+  const clearBtn=getEl("clear-resolved-btn");
   if(clearBtn)clearBtn.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
   if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}
   list.innerHTML="";
@@ -1439,60 +1463,60 @@ function renderNotifications(){
 }
 function resolveFlag(id){const flag=flags.find(f=>f.id===id);if(flag)flag.resolved=true;renderNotifications();updateMenuStats();}
 function clearResolved(){flags=flags.filter(f=>!f.resolved);renderNotifications();updateMenuStats();}
-function loadCSV(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const lines=e.target.result.trim().split("\n");if(lines.length<2)throw new Error("File appears empty");const headers=lines[0].split(",").map(h=>h.trim().replace(/"/g,"").toLowerCase());const required=["box_id","species","weight","grade","lot_number","vessel","price_per_kg","buyer_name","buyer_location"];const missing=required.filter(r=>!headers.includes(r));if(missing.length)throw new Error("Missing columns: "+missing.join(", "));const newData={};for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVLine(line);const row={};headers.forEach((h,idx)=>row[h]=(vals[idx]||"").trim().replace(/"/g,""));const id=row["box_id"].toUpperCase();newData[id]={species:row["species"],weight:row["weight"],grade:row["grade"],lot:row["lot_number"],vessel:row["vessel"],priceKg:row["price_per_kg"],buyer:row["buyer_name"],buyerLoc:row["buyer_location"]};}const count=Object.keys(newData).length;if(!count)throw new Error("No valid rows found");AUCTION_DATA=newData;printed=0;rebuildChips();document.getElementById("data-mode-badge").className="csv-using-live";document.getElementById("data-mode-badge").textContent="✅ Live data - "+count+" boxes from "+file.name;document.getElementById("data-sub").textContent="Live data loaded";document.getElementById("ticket-data-label").textContent="Live data";document.getElementById("t-chips-label").textContent="TODAY'S BOXES - tap to look up";showCSVStatus("success","✅ Loaded "+count+" boxes from "+file.name);}catch(err){showCSVStatus("error","❌ "+err.message);}};reader.readAsText(file);event.target.value="";}
+function loadCSV(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const lines=e.target.result.trim().split("\n");if(lines.length<2)throw new Error("File appears empty");const headers=lines[0].split(",").map(h=>h.trim().replace(/"/g,"").toLowerCase());const required=["box_id","species","weight","grade","lot_number","vessel","price_per_kg","buyer_name","buyer_location"];const missing=required.filter(r=>!headers.includes(r));if(missing.length)throw new Error("Missing columns: "+missing.join(", "));const newData={};for(let i=1;i<lines.length;i++){const line=lines[i].trim();if(!line)continue;const vals=parseCSVLine(line);const row={};headers.forEach((h,idx)=>row[h]=(vals[idx]||"").trim().replace(/"/g,""));const id=row["box_id"].toUpperCase();newData[id]={species:row["species"],weight:row["weight"],grade:row["grade"],lot:row["lot_number"],vessel:row["vessel"],priceKg:row["price_per_kg"],buyer:row["buyer_name"],buyerLoc:row["buyer_location"]};}const count=Object.keys(newData).length;if(!count)throw new Error("No valid rows found");AUCTION_DATA=newData;printed=0;rebuildChips();getEl("data-mode-badge").className="csv-using-live";getEl("data-mode-badge").textContent="✅ Live data - "+count+" boxes from "+file.name;getEl("data-sub").textContent="Live data loaded";getEl("ticket-data-label").textContent="Live data";getEl("t-chips-label").textContent="TODAY'S BOXES - tap to look up";showCSVStatus("success","✅ Loaded "+count+" boxes from "+file.name);}catch(err){showCSVStatus("error","❌ "+err.message);}};reader.readAsText(file);event.target.value="";}
 function parseCSVLine(line){const result=[];let cur="",inQ=false;for(let i=0;i<line.length;i++){if(line[i]==='"')inQ=!inQ;else if(line[i]===","&&!inQ){result.push(cur);cur="";}else cur+=line[i];}result.push(cur);return result;}
-function showCSVStatus(type,msg){const el=document.getElementById("csv-status");el.className="csv-status show "+type;el.textContent=msg;setTimeout(()=>el.classList.remove("show"),6000);}
-function resetToDemo(){AUCTION_DATA=Object.assign({},DEMO_DATA);printed=0;rebuildChips();document.getElementById("data-mode-badge").className="csv-using-demo";document.getElementById("data-mode-badge").textContent="⚠️ Using demo data - load a real CSV to begin";document.getElementById("data-sub").textContent="Demo data loaded";document.getElementById("ticket-data-label").textContent="Demo data";document.getElementById("t-chips-label").textContent="DEMO - tap a box to try it";}
+function showCSVStatus(type,msg){const el=getEl("csv-status");el.className="csv-status show "+type;el.textContent=msg;setTimeout(()=>el.classList.remove("show"),6000);}
+function resetToDemo(){AUCTION_DATA=Object.assign({},DEMO_DATA);printed=0;rebuildChips();getEl("data-mode-badge").className="csv-using-demo";getEl("data-mode-badge").textContent="⚠️ Using demo data - load a real CSV to begin";getEl("data-sub").textContent="Demo data loaded";getEl("ticket-data-label").textContent="Demo data";getEl("t-chips-label").textContent="DEMO - tap a box to try it";}
 function downloadTemplate(){const csv="box_id,species,weight,grade,lot_number,vessel,price_per_kg,buyer_name,buyer_location\nBX-001,Sole,18kg,A,L-2201,Ocean Harvest,£8.40,Plymouth Fish Co.,Plymouth Devon\nBX-002,Cod,22kg,A,L-2202,Silver Fin,£4.20,Brixham Seafoods Ltd,Brixham Devon";const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="neptune-export-template.csv";a.click();}
 
 let supplyEntries=[],sPhotoStream=null,sCapturedPhoto=null,selectedFlagBuyer=null,selectedFlagBuyerLoc=null,printedTicketKeys=new Set();
 function toggleSupplyCamera(){
   if(sPhotoStream){stopSupplyCamera();return;}
-  const vid=document.getElementById('s-photo-video');
+  const vid=getEl('s-photo-video');
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(s=>{
     sPhotoStream=s;vid.srcObject=s;vid.style.display='block';
-    document.getElementById('s-photo-icon').style.display='none';
-    document.getElementById('s-photo-label').style.display='none';
-    document.getElementById('s-photo-btn').textContent='Close camera';
-    document.getElementById('s-photo-btn').className='btn btn-red';
-    document.getElementById('s-capture-btn').style.display='block';
+    getEl('s-photo-icon').style.display='none';
+    getEl('s-photo-label').style.display='none';
+    getEl('s-photo-btn').textContent='Close camera';
+    getEl('s-photo-btn').className='btn btn-red';
+    getEl('s-capture-btn').style.display='block';
   }).catch(()=>alert('Camera not available.'));
 }
 function stopSupplyCamera(){
   if(sPhotoStream){sPhotoStream.getTracks().forEach(t=>t.stop());sPhotoStream=null;}
-  const vid=document.getElementById('s-photo-video');if(!vid)return;
+  const vid=getEl('s-photo-video');if(!vid)return;
   vid.style.display='none';
-  document.getElementById('s-photo-icon').style.display='';
-  document.getElementById('s-photo-label').style.display='';
-  document.getElementById('s-photo-btn').textContent='Open camera';
-  document.getElementById('s-photo-btn').className='btn btn-grey';
-  document.getElementById('s-capture-btn').style.display='none';
+  getEl('s-photo-icon').style.display='';
+  getEl('s-photo-label').style.display='';
+  getEl('s-photo-btn').textContent='Open camera';
+  getEl('s-photo-btn').className='btn btn-grey';
+  getEl('s-capture-btn').style.display='none';
 }
 function sCapturePhoto(){
-  const vid=document.getElementById('s-photo-video'),can=document.getElementById('s-photo-canvas');
+  const vid=getEl('s-photo-video'),can=getEl('s-photo-canvas');
   can.width=vid.videoWidth;can.height=vid.videoHeight;
   can.getContext('2d').drawImage(vid,0,0);
   sCapturedPhoto=can.toDataURL('image/jpeg',0.8);
   stopSupplyCamera();
-  document.getElementById('s-photo-img').src=sCapturedPhoto;
-  document.getElementById('s-photo-preview').style.display='block';
-  document.getElementById('s-photo-frame').style.display='none';
-  document.getElementById('s-photo-btn').style.display='none';
+  getEl('s-photo-img').src=sCapturedPhoto;
+  getEl('s-photo-preview').style.display='block';
+  getEl('s-photo-frame').style.display='none';
+  getEl('s-photo-btn').style.display='none';
 }
 function sRetakePhoto(){
   sCapturedPhoto=null;
-  document.getElementById('s-photo-preview').style.display='none';
-  document.getElementById('s-photo-frame').style.display='';
-  document.getElementById('s-photo-btn').style.display='block';
+  getEl('s-photo-preview').style.display='none';
+  getEl('s-photo-frame').style.display='';
+  getEl('s-photo-btn').style.display='block';
 }
 function submitSupply(){
-  const vessel=document.getElementById('s-vessel').value.trim();
-  const species=document.getElementById('s-species').value.trim();
-  const weight=document.getElementById('s-weight').value.trim();
-  const grade=document.getElementById('s-grade')?document.getElementById('s-grade').value.trim():'';
-  const size=document.getElementById('s-size')?document.getElementById('s-size').value.trim():'';
-  const notes=document.getElementById('s-notes').value.trim();
-  const err=document.getElementById('s-error');
+  const vessel=getEl('s-vessel').value.trim();
+  const species=getEl('s-species').value.trim();
+  const weight=getEl('s-weight').value.trim();
+  const grade=getEl('s-grade')?getEl('s-grade').value.trim():'';
+  const size=getEl('s-size')?getEl('s-size').value.trim():'';
+  const notes=getEl('s-notes').value.trim();
+  const err=getEl('s-error');
   if(!vessel||!species||!weight){err.style.display='block';return;}
   err.style.display='none';
   const now=new Date(),timeStr=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -1501,120 +1525,117 @@ function submitSupply(){
   flags.push({id:entry.id,boxId:'UNREGISTERED',issue:'Unregistered box - add to supply',notes:species+' | '+weight+(grade?' | Grade: '+grade:'')+(size?' | Size: '+size:'')+ ' | Vessel: '+vessel+(notes?' | '+notes:''),photo:sCapturedPhoto,raisedBy:currentUser,time:timeStr,resolved:false,isSupply:true});
   updateMenuStats();
 
-  document.getElementById('supply-form-card').style.display='none';
-  document.getElementById('s-success').style.display='block';
-  document.getElementById('s-success-msg').textContent=species+' ('+weight+') from '+vessel+' has been sent to the auctioneer.';
+  getEl('supply-form-card').style.display='none';
+  getEl('s-success').style.display='block';
+  getEl('s-success-msg').textContent=species+' ('+weight+') from '+vessel+' has been sent to the auctioneer.';
   sCapturedPhoto=null;
 }
 function clearSupplyForm(){
-  ['s-vessel','s-species','s-weight','s-grade','s-size','s-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('s-error').style.display='none';
-  document.getElementById('s-success').style.display='none';
-  document.getElementById('supply-form-card').style.display='block';
+  ['s-vessel','s-species','s-weight','s-grade','s-size','s-notes'].forEach(id=>{const el=getEl(id);if(el)el.value='';});
+  getEl('s-error').style.display='none';
+  getEl('s-success').style.display='none';
+  getEl('supply-form-card').style.display='block';
   stopSupplyCamera();sCapturedPhoto=null;
-  document.getElementById('s-photo-preview').style.display='none';
-  document.getElementById('s-photo-frame').style.display='';
-  document.getElementById('s-photo-btn').style.display='block';
-  document.getElementById('s-photo-btn').textContent='Open camera';
-  document.getElementById('s-photo-btn').className='btn btn-grey';
-  document.getElementById('s-capture-btn').style.display='none';
+  getEl('s-photo-preview').style.display='none';
+  getEl('s-photo-frame').style.display='';
+  getEl('s-photo-btn').style.display='block';
+  getEl('s-photo-btn').textContent='Open camera';
+  getEl('s-photo-btn').className='btn btn-grey';
+  getEl('s-capture-btn').style.display='none';
 }
-
 
 function flagModalCustom(){
   // Hide the flag modal and show custom ticket builder
-  document.getElementById("flag-modal-overlay").style.display="none";
-  const overlay=document.getElementById("custom-ticket-overlay");
+  getEl("flag-modal-overlay").style.display="none";
+  const overlay=getEl("custom-ticket-overlay");
   // Pre-fill from box data if available
-  const boxId=document.getElementById("flag-modal-overlay").dataset.boxid;
+  const boxId=getEl("flag-modal-overlay").dataset.boxid;
   const box=AUCTION_DATA[boxId];
   if(box){
-    document.getElementById("ct-vessel").value=box.vessel||"";
-    document.getElementById("ct-weight").value=box.weight||"";
-    document.getElementById("ct-grade").value=box.grade||"";
-    document.getElementById("ct-buyer").value=selectedFlagBuyer||box.buyer||"";
+    getEl("ct-vessel").value=box.vessel||"";
+    getEl("ct-weight").value=box.weight||"";
+    getEl("ct-grade").value=box.grade||"";
+    getEl("ct-buyer").value=selectedFlagBuyer||box.buyer||"";
   }
-  document.getElementById("ct-date").textContent=new Date().toLocaleDateString("en-GB");
-  document.getElementById("ct-prev-boxid").textContent=boxId||"—";
+  getEl("ct-date").textContent=new Date().toLocaleDateString("en-GB");
+  getEl("ct-prev-boxid").textContent=boxId||"—";
   updateCustomPreview();
   overlay.style.display="flex";
 }
 
-
-
 function openBlankCustomTicket(){
   // Clear all fields
-  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  document.getElementById("ct-date").textContent=new Date().toLocaleDateString("en-GB");
-  document.getElementById("ct-prev-boxid").textContent="CUSTOM";
-  document.getElementById("ct-error").style.display="none";
+  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=getEl(id);if(el)el.value="";});
+  getEl("ct-date").textContent=new Date().toLocaleDateString("en-GB");
+  getEl("ct-prev-boxid").textContent="CUSTOM";
+  getEl("ct-error").style.display="none";
   // Clear modal dataset so it doesn't return to a box
-  const modal=document.getElementById("flag-modal-overlay");
+  const modal=getEl("flag-modal-overlay");
   modal.dataset.returnboxid="";
   modal.dataset.boxid="";
   selectedFlagBuyerBoxes=[];
   updateCustomPreview();
-  document.getElementById("custom-ticket-overlay").style.display="flex";
+  getEl("custom-ticket-overlay").style.display="flex";
 }
 
 function flagChangeBuyer(){
   // Use the specifically selected box if available, otherwise fall back to scanned box
-  const boxId=selectedFlagBuyerBoxes.length===1?selectedFlagBuyerBoxes[0]:document.getElementById("f-actual-boxid").value;
+  const boxId=selectedFlagBuyerBoxes.length===1?selectedFlagBuyerBoxes[0]:getEl("f-actual-boxid").value;
   const box=AUCTION_DATA[boxId];
   // Store boxId in modal so returnToBoxInfo works
-  document.getElementById("flag-modal-overlay").dataset.returnboxid=document.getElementById("f-actual-boxid").value;
+  getEl("flag-modal-overlay").dataset.returnboxid=getEl("f-actual-boxid").value;
   // Pre-fill custom ticket fields from the SELECTED box
   if(box){
-    document.getElementById("ct-vessel").value=box.vessel||"";
-    document.getElementById("ct-weight").value=box.weight||"";
-    document.getElementById("ct-grade").value=box.grade||"";
-    document.getElementById("ct-buyer").value=""; // blank - operator enters correct buyer
+    getEl("ct-vessel").value=box.vessel||"";
+    getEl("ct-weight").value=box.weight||"";
+    getEl("ct-grade").value=box.grade||"";
+    getEl("ct-buyer").value=""; // blank - operator enters correct buyer
   }
-  document.getElementById("ct-date").textContent=new Date().toLocaleDateString("en-GB");
-  document.getElementById("ct-prev-boxid").textContent=boxId||"—";
+  getEl("ct-date").textContent=new Date().toLocaleDateString("en-GB");
+  getEl("ct-prev-boxid").textContent=boxId||"—";
   updateCustomPreview();
-  document.getElementById("custom-ticket-overlay").style.display="flex";
+  getEl("custom-ticket-overlay").style.display="flex";
 }
 
 function updateCustomPreview(){
-  const ctSpeciesEl=document.getElementById("ct-prev-species");
-  const ctSpeciesInput=document.getElementById("ct-species");
+  const ctSpeciesEl=getEl("ct-prev-species");
+  const ctSpeciesInput=getEl("ct-species");
   const ctSpeciesVal=ctSpeciesInput?ctSpeciesInput.value.toUpperCase():"";
   if(ctSpeciesEl)ctSpeciesEl.textContent=ctSpeciesVal||"—";
-  const vessel=document.getElementById("ct-vessel").value||"—";
-  const weight=document.getElementById("ct-weight").value||"—";
-  const grade=document.getElementById("ct-grade").value||"—";
-  const buyer=document.getElementById("ct-buyer").value||"—";
-  const sz=document.getElementById("ct-size")?document.getElementById("ct-size").value:"";document.getElementById("ct-prev-details").textContent=weight+" | Grade "+grade+(sz?" | Size "+sz:"")+" | "+vessel;
-  document.getElementById("ct-prev-buyer").textContent=buyer;
-  const warnChk=document.getElementById("ct-issue-warning");
-  const warnBanner=document.getElementById("ct-warning-banner");
+  const vessel=getEl("ct-vessel").value||"—";
+  const weight=getEl("ct-weight").value||"—";
+  const grade=getEl("ct-grade").value||"—";
+  const buyer=getEl("ct-buyer").value||"—";
+  const sz=getEl("ct-size")?getEl("ct-size").value:"";getEl("ct-prev-details").textContent=weight+" | Grade "+grade+(sz?" | Size "+sz:"")+" | "+vessel;
+  getEl("ct-prev-buyer").textContent=buyer;
+  const warnChk=getEl("ct-issue-warning");
+  const warnBanner=getEl("ct-warning-banner");
   if(warnBanner)warnBanner.style.display=(warnChk&&warnChk.checked)?"block":"none";
-  const nbEl=document.getElementById("ct-numboxes");
+  const nbEl=getEl("ct-numboxes");
   const nbVal=nbEl?nbEl.value:"";
-  if(nbVal>1)document.getElementById("ct-prev-boxid").textContent=nbVal+"x boxes";
+  if(nbVal>1)getEl("ct-prev-boxid").textContent=nbVal+"x boxes";
 }
 
 // Live preview updates - called after DOM is ready
 function initCustomTicketListeners(){
   ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{
-    const el=document.getElementById(id);
+    const el=getEl(id);
     if(el)el.addEventListener("input",updateCustomPreview);
   });
-  const warnEl=document.getElementById("ct-issue-warning");
+  const warnEl=getEl("ct-issue-warning");
   if(warnEl)warnEl.addEventListener("change",updateCustomPreview);
 }
 
 function printCustomTicket(){
-  const vessel=document.getElementById("ct-vessel").value.trim();
-  const weight=document.getElementById("ct-weight").value.trim();
-  const grade=document.getElementById("ct-grade").value.trim();
-  const buyer=document.getElementById("ct-buyer").value.trim();
-  const err=document.getElementById("ct-error");
+  const vessel=getEl("ct-vessel").value.trim();
+  const weight=getEl("ct-weight").value.trim();
+  const grade=getEl("ct-grade").value.trim();
+  const buyer=getEl("ct-buyer").value.trim();
+  const err=getEl("ct-error");
   if(!vessel||!weight||!grade||!buyer){err.style.display="block";return;}
   err.style.display="none";
   // Store custom ticket against the SPECIFIC box that was changed
-  const ctBoxIds=selectedFlagBuyerBoxes.length>0?selectedFlagBuyerBoxes:[document.getElementById("flag-modal-overlay").dataset.returnboxid||document.getElementById("flag-modal-overlay").dataset.boxid].filter(Boolean);
+  const ctBoxIds=selectedFlagBuyerBoxes.length>0?selectedFlagBuyerBoxes:[getEl("flag-modal-overlay").dataset.returnboxid||getEl("flag-modal-overlay").dataset.boxid].filter(Boolean);
   const now=new Date();
   const timeStr=now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
   ctBoxIds.forEach(id=>{
@@ -1662,12 +1683,11 @@ function printCustomTicket(){
 }
 
 function closeCustomTicket(){
-  document.getElementById("custom-ticket-overlay").style.display="none";
+  getEl("custom-ticket-overlay").style.display="none";
   // Clear fields
-  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  document.getElementById("ct-error").style.display="none";
+  ["ct-species","ct-vessel","ct-weight","ct-grade","ct-size","ct-buyer","ct-numboxes"].forEach(id=>{const el=getEl(id);if(el)el.value="";});
+  getEl("ct-error").style.display="none";
 }
-
 
 function updateFlagSelection(){
   const checked=Array.from(document.querySelectorAll(".flag-box-chk:checked"));
@@ -1679,10 +1699,9 @@ function updateFlagSelection(){
   if(submitBtn)submitBtn.textContent="\uD83D\uDEA9 Submit flag ("+checked.length+" box"+(checked.length!==1?"es":"")+" selected)";
 }
 
-
 function ticketSearch(){
-  const q=document.getElementById("t-search").value.trim().toLowerCase();
-  const dropdown=document.getElementById("t-dropdown");
+  const q=getEl("t-search").value.trim().toLowerCase();
+  const dropdown=getEl("t-dropdown");
   const entries=Object.entries(AUCTION_DATA);
   const matches=q?entries.filter(([id,b])=>
     id.toLowerCase().includes(q)||
@@ -1701,7 +1720,7 @@ function ticketSearch(){
       isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;margin-left:4px;'>Printed</span>":"";
     item.style.cssText="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;";
     item.innerHTML="<div><span style='font-weight:600;color:#0C447C;'>"+id+"</span>"+statusBadge+"<div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+b.species+" — "+b.weight+" — "+b.vessel+"</div></div><span style='font-size:12px;color:#9ca3af;'>"+b.buyer.split(" ")[0]+"</span>";
-    item.onmousedown=function(e){e.preventDefault();showTicketResult(id);const inp=document.getElementById("t-search");inp.value="";inp.blur();dropdown.style.display="none";};
+    item.onmousedown=function(e){e.preventDefault();showTicketResult(id);const inp=getEl("t-search");inp.value="";inp.blur();dropdown.style.display="none";};
     item.onmouseover=function(){this.style.background="#f9fafb";};
     item.onmouseout=function(){this.style.background="white";};
     dropdown.appendChild(item);
@@ -1711,18 +1730,13 @@ function ticketSearch(){
 }
 // Close dropdown when clicking outside
 document.addEventListener("click",function(e){
-  const dd=document.getElementById("t-dropdown");
-  const inp=document.getElementById("t-search");
+  const dd=getEl("t-dropdown");
+  const inp=getEl("t-search");
   if(dd&&inp&&!dd.contains(e.target)&&e.target!==inp)dd.style.display="none";
 });
-
-
-// ── Boxes sold count ──
 function getSoldCount(){return Object.values(AUCTION_DATA).filter(b=>b.buyer&&b.buyer.length>0).length;}
-
-// ── Render box list (boxes today screen) ──
 function renderBoxList(orderBy){
-  document.getElementById("boxes-filter-label").textContent="Order by "+(orderBy==="species"?"species":"boat");
+  getEl("boxes-filter-label").textContent="Order by "+(orderBy==="species"?"species":"boat");
   const entries=Object.entries(AUCTION_DATA);
   const groups={};
   entries.forEach(([id,b])=>{
@@ -1730,7 +1744,7 @@ function renderBoxList(orderBy){
     if(!groups[key])groups[key]=[];
     groups[key].push({id,b});
   });
-  const container=document.getElementById("boxes-list");
+  const container=getEl("boxes-list");
   container.innerHTML="";
   Object.keys(groups).sort().forEach(key=>{
     const hdr=document.createElement("div");
@@ -1760,7 +1774,7 @@ function renderPrintedList(orderBy){
     if(!groups[key])groups[key]=[];
     groups[key].push({id,b});
   });
-  const container=document.getElementById("printed-list");
+  const container=getEl("printed-list");
   container.innerHTML="";
   if(entries.length===0){container.innerHTML="<div style='text-align:center;padding:2rem;color:#6b7280;font-size:14px;'>No labels printed yet.</div>";return;}
   Object.keys(groups).sort().forEach(key=>{
@@ -1786,23 +1800,23 @@ function previewConsolidatedLabel(data){
   // If single box with custom ticket, use custom data for preview
   if(count===1&&customTickets[bxIds[0]]){
     const ct=customTickets[bxIds[0]];
-    document.getElementById("t-lp-date").textContent=today;
-    document.getElementById("t-lp-species").textContent=(AUCTION_DATA[bxIds[0]]?AUCTION_DATA[bxIds[0]].species:"").toUpperCase();
-    document.getElementById("t-lp-details").textContent=ct.weight+" | Grade "+ct.grade+" | "+ct.vessel;
-    document.getElementById("t-lp-buyer").textContent=ct.buyer+" (custom)";
-    document.getElementById("t-lp-box").textContent=bxIds[0];
-    document.getElementById("t-lp-lot").textContent=data.lot||"";
+    getEl("t-lp-date").textContent=today;
+    getEl("t-lp-species").textContent=(AUCTION_DATA[bxIds[0]]?AUCTION_DATA[bxIds[0]].species:"").toUpperCase();
+    getEl("t-lp-details").textContent=ct.weight+" | Grade "+ct.grade+" | "+ct.vessel;
+    getEl("t-lp-buyer").textContent=ct.buyer+" (custom)";
+    getEl("t-lp-box").textContent=bxIds[0];
+    getEl("t-lp-lot").textContent=data.lot||"";
     return;
   }
   const lpWCounts={};
   bxIds.forEach(id=>{const bx=AUCTION_DATA[id];if(bx)lpWCounts[bx.weight]=(lpWCounts[bx.weight]||0)+1;});
   const lpBreakdown=Object.entries(lpWCounts).sort((a,b)=>parseFloat(b[0])-parseFloat(a[0])).map(([w,n])=>n+"x "+w).join(" + ");
-  document.getElementById("t-lp-date").textContent=today;
-  document.getElementById("t-lp-species").textContent=data.species.toUpperCase();
-  document.getElementById("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
-  document.getElementById("t-lp-buyer").textContent=data.buyer;
-  document.getElementById("t-lp-box").textContent=count>1?count+"x":data.boxes;
-  document.getElementById("t-lp-lot").textContent=data.lot;
+  getEl("t-lp-date").textContent=today;
+  getEl("t-lp-species").textContent=data.species.toUpperCase();
+  getEl("t-lp-details").textContent=(count>1?lpBreakdown+" ("+data.totalkg+")":data.totalkg)+" | Grade "+data.grade+" | "+data.vessel;
+  getEl("t-lp-buyer").textContent=data.buyer;
+  getEl("t-lp-box").textContent=count>1?count+"x":data.boxes;
+  getEl("t-lp-lot").textContent=data.lot;
 }
 </script>
 
