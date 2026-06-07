@@ -31,21 +31,27 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .header-right span{font-size:11px;color:rgba(255,255,255,0.7);}
 .signout-btn{font-size:11px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;}
 .back-btn{font-size:12px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-bottom:4px;}
-.menu-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
-.mstat{background:white;border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
-.mstat .s-num{font-size:20px;font-weight:700;color:#0C447C;}
-.mstat .s-lbl{font-size:10px;color:#6b7280;margin-top:2px;}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;}
-.menu-card{background:white;border-radius:16px;padding:1.5rem 1rem;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.07);border:2px solid transparent;transition:border-color .15s,transform .1s;position:relative;}
-.menu-card:hover{border-color:#0C447C;transform:translateY(-2px);}
+.menu-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
+.mstat{background:white;border-radius:12px;padding:12px 8px;text-align:center;border:1px solid #e5e7eb;cursor:pointer;transition:all .15s;}
+.mstat:hover{border-color:#0C447C;background:#f0f6ff;}
+.mstat .s-num{font-size:22px;font-weight:800;color:#0C447C;letter-spacing:-0.5px;}
+.mstat .s-lbl{font-size:10px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+.menu-card{background:white;border-radius:16px;padding:1.25rem 1rem;text-align:center;cursor:pointer;border:1px solid #e5e7eb;transition:all .15s;position:relative;overflow:hidden;}
+.menu-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--card-accent,#0C447C);border-radius:16px 16px 0 0;}
+.menu-card:hover{border-color:#0C447C;box-shadow:0 4px 12px rgba(12,68,124,0.12);transform:translateY(-1px);}
 .menu-card:active{transform:scale(0.97);}
+.menu-card.blue{--card-accent:#0C447C;}
+.menu-card.red{--card-accent:#dc2626;}
+.menu-card.green{--card-accent:#16a34a;}
+.menu-card.amber{--card-accent:#d97706;}
 .menu-icon{font-size:36px;margin-bottom:10px;}
 .menu-label{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
 .menu-desc{font-size:11px;color:#6b7280;line-height:1.4;}
-.menu-card.blue{border-top:4px solid #0C447C;}
-.menu-card.red{border-top:4px solid #dc2626;}
-.menu-card.green{border-top:4px solid #166534;}
-.menu-card.amber{border-top:4px solid #d97706;}
+
+
+
+
 .notif-badge{position:absolute;top:10px;right:10px;background:#dc2626;color:white;font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;display:none;}
 .notif-badge.show{display:block;}
 .card{background:white;border-radius:14px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.07);}
@@ -183,21 +189,23 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div class="header-text"><h1>Brixham Fish Market</h1><p id="menu-role-label">Operator</p></div>
     <div class="header-right"><span id="menu-username">-</span><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
+  <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Today's summary</div>
   <div class="menu-stats" style="grid-template-columns:repeat(4,1fr);">
     <div class="mstat" onclick="goTo('boxes-screen')" style="cursor:pointer;"><div class="s-num" id="ms-boxes">0</div><div class="s-lbl">Boxes today</div></div>
     <div class="mstat" onclick="goTo('printed-screen')" style="cursor:pointer;"><div class="s-num" id="ms-printed">0</div><div class="s-lbl">Printed</div></div>
     <div class="mstat" onclick="goTo('notif-screen')" style="cursor:pointer;"><div class="s-num" id="ms-flags">0</div><div class="s-lbl">Flags raised</div></div>
     <div class="mstat"><div class="s-num" id="ms-sold">0</div><div class="s-lbl">Boxes sold</div></div>
   </div>
+  <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;margin-top:4px;">Actions</div>
   <div class="menu-grid">
     <div class="menu-card blue" onclick="goTo('ticket-screen')"><div class="menu-icon">🏷️</div><div class="menu-label">Start ticketing</div><div class="menu-desc">Scan a box QR and print a label</div></div>
     <div class="menu-card red" onclick="goTo('flag-screen')"><div class="menu-icon">🚩</div><div class="menu-label">Flag a box</div><div class="menu-desc">Report a problem with a box</div></div>
     <div class="menu-card amber" onclick="goTo('notif-screen')"><div class="notif-badge" id="notif-badge">0</div><div class="menu-icon">🔔</div><div class="menu-label">Notifications</div><div class="menu-desc">View flagged box reports</div></div>
     <div class="menu-card green" id="data-tile" onclick="goTo('data-screen')"><div class="menu-icon">📂</div><div class="menu-label">Auction data</div><div class="menu-desc">Load today's CSV from Neptune</div></div>
-    <div class="menu-card" style="border-top:4px solid #0891b2;" onclick="goTo('supply-screen')"><div class="menu-icon">🐟</div><div class="menu-label">Add to supply</div><div class="menu-desc">Report an unregistered box</div></div>
-    <div class="menu-card" style="border-top:4px solid #7c3aed;" onclick="goTo('search-screen')"><div class="menu-icon">&#128269;</div><div class="menu-label">Search boxes</div><div class="menu-desc">Find and reprint any label</div></div>
-    <div class="menu-card" style="border-top:4px solid #0891b2;" onclick="openBlankCustomTicket()"><div class="menu-icon">&#127991;&#65039;</div><div class="menu-label">Create ticket</div><div class="menu-desc">Print a custom label from scratch</div></div>
-    <div class="menu-card" style="border-top:4px solid #1e40af;grid-column:1/-1;" onclick="goTo('vessels-screen')"><div class="menu-icon">&#128674;</div><div class="menu-label">Vessel tracker</div><div class="menu-desc">Live map &#8212; fishing vessels near Brixham</div></div>
+    <div class="menu-card" style="--card-accent:#0891b2;" onclick="goTo('supply-screen')"><div class="menu-icon">🐟</div><div class="menu-label">Add to supply</div><div class="menu-desc">Report an unregistered box</div></div>
+    <div class="menu-card" style="--card-accent:#7c3aed;" onclick="goTo('search-screen')"><div class="menu-icon">&#128269;</div><div class="menu-label">Search boxes</div><div class="menu-desc">Find and reprint any label</div></div>
+    <div class="menu-card" style="--card-accent:#16a34a;" onclick="openBlankCustomTicket()"><div class="menu-icon">&#127991;&#65039;</div><div class="menu-label">Create ticket</div><div class="menu-desc">Print a custom label from scratch</div></div>
+    <div class="menu-card" style="--card-accent:#1e40af;grid-column:1/-1;" onclick="goTo('vessels-screen')"><div class="menu-icon">&#128674;</div><div class="menu-label">Vessel tracker</div><div class="menu-desc">Live map &#8212; fishing vessels near Brixham</div></div>
   </div>
 </div></div>
 
@@ -857,7 +865,7 @@ function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.re
 function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=getEl("li-pass").value,err=getEl("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");getEl("menu-username").textContent=user;getEl("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
     const dataTile=getEl("data-tile");
     if(dataTile)dataTile.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
-    goTo("menu-screen");}else{err.classList.add("show");getEl("li-pass").value="";}}
+    showSplash(user,currentRole);}else{err.classList.add("show");getEl("li-pass").value="";}}
 function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
 getEl("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 getEl("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")getEl("li-pass").focus();});
@@ -1820,6 +1828,33 @@ function renderPrintedList(orderBy){
   });
 }
 
+
+function showSplash(user,role){
+  const el=getEl("splash-screen");
+  el.style.display="flex";
+  const logo=getEl("splash-logo");
+  const title=getEl("splash-title");
+  const userEl=getEl("splash-user");
+  const bar=getEl("splash-bar");
+  userEl.textContent=user.charAt(0).toUpperCase()+user.slice(1)+" · "+role;
+  // Staggered fade-ins using CSS animation
+  logo.style.animation="fadeUp 0.5s ease forwards";
+  setTimeout(()=>title.style.animation="fadeUp 0.5s ease forwards",150);
+  setTimeout(()=>userEl.style.animation="fadeUp 0.5s ease forwards",350);
+  setTimeout(()=>bar.style.animation="barGrow 1.2s ease forwards",400);
+  // Exit
+  setTimeout(()=>{
+    el.style.animation="splashOut 0.35s ease forwards";
+    setTimeout(()=>{
+      el.style.display="none";
+      el.style.animation="";
+      logo.style.animation="";title.style.animation="";userEl.style.animation="";bar.style.animation="";
+      logo.style.opacity=title.style.opacity=userEl.style.opacity="0";bar.style.width="0";
+      goTo("menu-screen");
+    },350);
+  },2000);
+}
+
 function previewConsolidatedLabel(data){
   const today=new Date().toLocaleDateString("en-GB");
   const count=parseInt(data.count)||1;
@@ -2020,6 +2055,17 @@ function previewConsolidatedLabel(data){
   </div>
 </div>
 
+
+<!-- SPLASH -->
+<div id="splash-screen" style="display:none;position:fixed;inset:0;background:#0C447C;z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+  <div id="splash-logo" style="font-size:44px;font-weight:900;color:white;letter-spacing:-1px;opacity:0;">BFM</div>
+  <div id="splash-title" style="font-size:15px;color:rgba(255,255,255,0.7);letter-spacing:.25em;text-transform:uppercase;margin-top:8px;opacity:0;">Brixham Fish Market</div>
+  <div id="splash-user" style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:32px;opacity:0;"></div>
+  <div style="width:120px;height:2px;background:rgba(255,255,255,0.15);border-radius:2px;margin-top:16px;overflow:hidden;">
+    <div id="splash-bar" style="height:100%;background:white;width:0;border-radius:2px;"></div>
+  </div>
+</div>
+
 <!-- FLAG ACTION MODAL -->
 <div id="flag-modal-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:1.5rem;">
   <div style="background:white;border-radius:20px;padding:1.75rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
@@ -2069,5 +2115,4 @@ function previewConsolidatedLabel(data){
   </div>
   <div id="printed-list"></div>
 </div></div>
-</body>
-</html>
+>
