@@ -1736,6 +1736,8 @@ document.addEventListener("click",function(e){
 });
 function getSoldCount(){return Object.values(AUCTION_DATA).filter(b=>b.buyer&&b.buyer.length>0).length;}
 function renderBoxList(orderBy){
+  const bS=getEl("boxes-btn-species"),bV=getEl("boxes-btn-vessel");
+  if(bS&&bV){bS.className=orderBy==="species"?"btn btn-blue":"btn btn-grey";bV.className=orderBy==="vessel"?"btn btn-blue":"btn btn-grey";}
   getEl("boxes-filter-label").textContent="Order by "+(orderBy==="species"?"species":"boat");
   const entries=Object.entries(AUCTION_DATA);
   const groups={};
@@ -1746,50 +1748,75 @@ function renderBoxList(orderBy){
   });
   const container=getEl("boxes-list");
   container.innerHTML="";
-  Object.keys(groups).sort().forEach(key=>{
+  Object.keys(groups).sort().forEach((key,gi)=>{
+    const groupId="boxes-group-"+gi;
     const hdr=document.createElement("div");
-    hdr.style.cssText="font-size:13px;font-weight:700;color:#374151;padding:8px 0 4px;border-bottom:2px solid #e5e7eb;margin-bottom:6px;margin-top:12px;";
-    hdr.textContent=key+" ("+groups[key].length+" boxes)";
+    hdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f3f4f6;border-radius:10px;margin-bottom:4px;margin-top:8px;cursor:pointer;user-select:none;";
+    const nPrinted=groups[key].filter(({id})=>printedBoxIds.has(id)).length;
+    const nFlagged=groups[key].filter(({id})=>flaggedBoxIds.has(id)).length;
+    hdr.innerHTML="<div><span style='font-weight:700;color:#374151;font-size:14px;'>"+key+"</span><span style='font-size:12px;color:#6b7280;margin-left:8px;'>"+groups[key].length+" boxes</span>"+(nFlagged?"<span style='font-size:11px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;margin-left:6px;'>"+nFlagged+" flagged</span>":"")+(nPrinted?"<span style='font-size:11px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;margin-left:4px;'>"+nPrinted+" printed</span>":"")+"</div><span id='chev-"+groupId+"' style='color:#9ca3af;font-size:12px;'>&#9660;</span>";
+    hdr.onclick=()=>toggleBoxGroup(groupId);
     container.appendChild(hdr);
-    // Sort by vessel or species within group
+    const list=document.createElement("div");
+    list.id=groupId;
+    list.style.cssText="display:none;margin-bottom:4px;";
     groups[key].sort((a,b)=>orderBy==="species"?a.b.vessel.localeCompare(b.b.vessel):a.b.species.localeCompare(b.b.species));
     groups[key].forEach(({id,b})=>{
       const isPrinted=printedBoxIds.has(id);
       const isFlagged=flaggedBoxIds.has(id);
       const row=document.createElement("div");
-      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:4px;box-shadow:0 1px 2px rgba(0,0,0,0.05);cursor:pointer;";
+      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:3px;cursor:pointer;border-left:3px solid "+(isFlagged?"#dc2626":isPrinted?"#16a34a":"#e5e7eb")+";";
       const badge=isFlagged?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;'>Flagged</span>":isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;'>Printed</span>":"<span style='font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:6px;'>Pending</span>";
       row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span> "+badge+"<div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+(orderBy==="species"?b.vessel:b.species)+" — "+b.weight+" — "+b.buyer.split(" ")[0]+"</div></div><span style='font-size:12px;color:#9ca3af;'>"+b.lot+"</span>";
       row.onclick=()=>{goTo("ticket-screen");showTicketResult(id);};
-      container.appendChild(row);
+      list.appendChild(row);
     });
+    container.appendChild(list);
   });
 }
 
+function toggleBoxGroup(groupId){
+  const list=getEl(groupId);
+  const chev=getEl("chev-"+groupId);
+  if(!list)return;
+  const open=list.style.display==="block";
+  list.style.display=open?"none":"block";
+  if(chev)chev.innerHTML=open?"&#9660;":"&#9650;";
+}
+
+
 function renderPrintedList(orderBy){
+  const pS=getEl("printed-btn-species"),pV=getEl("printed-btn-vessel");
+  if(pS&&pV){pS.className=orderBy==="species"?"btn btn-blue":"btn btn-grey";pV.className=orderBy==="vessel"?"btn btn-blue":"btn btn-grey";}
   const entries=Object.entries(AUCTION_DATA).filter(([id])=>printedBoxIds.has(id));
+  const container=getEl("printed-list");
+  container.innerHTML="";
+  if(entries.length===0){container.innerHTML="<div style='text-align:center;padding:2rem;color:#6b7280;font-size:14px;'>No labels printed yet.</div>";return;}
   const groups={};
   entries.forEach(([id,b])=>{
     const key=orderBy==="species"?b.species:b.vessel;
     if(!groups[key])groups[key]=[];
     groups[key].push({id,b});
   });
-  const container=getEl("printed-list");
-  container.innerHTML="";
-  if(entries.length===0){container.innerHTML="<div style='text-align:center;padding:2rem;color:#6b7280;font-size:14px;'>No labels printed yet.</div>";return;}
-  Object.keys(groups).sort().forEach(key=>{
+  Object.keys(groups).sort().forEach((key,gi)=>{
+    const groupId="printed-group-"+gi;
     const hdr=document.createElement("div");
-    hdr.style.cssText="font-size:13px;font-weight:700;color:#374151;padding:8px 0 4px;border-bottom:2px solid #e5e7eb;margin-bottom:6px;margin-top:12px;";
-    hdr.textContent=key+" ("+groups[key].length+")";
+    hdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f3f4f6;border-radius:10px;margin-bottom:4px;margin-top:8px;cursor:pointer;user-select:none;";
+    hdr.innerHTML="<div><span style='font-weight:700;color:#374151;font-size:14px;'>"+key+"</span><span style='font-size:12px;color:#6b7280;margin-left:8px;'>"+groups[key].length+" printed</span></div><span id='chev-"+groupId+"' style='color:#9ca3af;font-size:12px;'>&#9660;</span>";
+    hdr.onclick=()=>toggleBoxGroup(groupId);
     container.appendChild(hdr);
+    const list=document.createElement("div");
+    list.id=groupId;
+    list.style.cssText="display:none;margin-bottom:4px;";
     groups[key].sort((a,b)=>a.id.localeCompare(b.id));
     groups[key].forEach(({id,b})=>{
       const row=document.createElement("div");
-      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:4px;box-shadow:0 1px 2px rgba(0,0,0,0.05);cursor:pointer;";
-      row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span><div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+(orderBy==="species"?b.vessel:b.species)+" — "+b.weight+" — "+b.buyer.split(" ")[0]+"</div></div><span style='font-size:12px;color:#166534;font-weight:600;'>&#10003; Printed</span>";
+      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:3px;cursor:pointer;border-left:3px solid #16a34a;";
+      row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span><div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+(orderBy==="species"?b.vessel:b.species)+" — "+b.weight+" — "+b.buyer.split(" ")[0]+"</div></div><span style='font-size:12px;color:#166534;font-weight:600;'>&#10003;</span>";
       row.onclick=()=>{goTo("ticket-screen");showTicketResult(id);};
-      container.appendChild(row);
+      list.appendChild(row);
     });
+    container.appendChild(list);
   });
 }
 
@@ -2023,8 +2050,8 @@ function previewConsolidatedLabel(data){
     <div class="header-right"><button class="back-btn" onclick="goTo('menu-screen')">&#8592; Menu</button><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:1rem;">
-    <button class="btn btn-blue" onclick="renderBoxList('species')" style="margin-top:0;flex:1;padding:8px;">Order by species</button>
-    <button class="btn btn-grey" onclick="renderBoxList('vessel')" style="margin-top:0;flex:1;padding:8px;">Order by boat</button>
+    <button id="boxes-btn-species" class="btn btn-blue" onclick="renderBoxList('species')" style="margin-top:0;flex:1;padding:8px;">Order by species</button>
+    <button id="boxes-btn-vessel" class="btn btn-grey" onclick="renderBoxList('vessel')" style="margin-top:0;flex:1;padding:8px;">Order by boat</button>
   </div>
   <div id="boxes-list"></div>
 </div></div>
@@ -2037,8 +2064,8 @@ function previewConsolidatedLabel(data){
     <div class="header-right"><button class="back-btn" onclick="goTo('menu-screen')">&#8592; Menu</button><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:1rem;">
-    <button class="btn btn-blue" onclick="renderPrintedList('species')" style="margin-top:0;flex:1;padding:8px;">Order by species</button>
-    <button class="btn btn-grey" onclick="renderPrintedList('vessel')" style="margin-top:0;flex:1;padding:8px;">Order by boat</button>
+    <button id="printed-btn-species" class="btn btn-blue" onclick="renderPrintedList('species')" style="margin-top:0;flex:1;padding:8px;">Order by species</button>
+    <button id="printed-btn-vessel" class="btn btn-grey" onclick="renderPrintedList('vessel')" style="margin-top:0;flex:1;padding:8px;">Order by boat</button>
   </div>
   <div id="printed-list"></div>
 </div></div>
