@@ -1444,6 +1444,7 @@ function renderNotifications(){
   if(clearBtn)clearBtn.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
   if(flags.length===0){list.innerHTML="<div class='notif-empty'>No flags raised yet today.</div>";return;}
   list.innerHTML="";
+  let lastIssueGroup="";
   [...flags].sort((a,b)=>{
     // Supply always first
     if(a.isSupply&&!b.isSupply)return -1;
