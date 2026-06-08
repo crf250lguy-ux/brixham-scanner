@@ -866,7 +866,7 @@ function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=g
     const dataTile=getEl("data-tile");
     if(dataTile)dataTile.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
     showSplash(user,currentRole);}else{err.classList.add("show");getEl("li-pass").value="";}}
-function signOut(){currentUser="";currentRole="";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
+function signOut(){currentUser="";currentRole="";const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
 getEl("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 getEl("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")getEl("li-pass").focus();});
 function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;getEl("ms-boxes").textContent=total;getEl("ms-printed").textContent=printed;getEl("ms-flags").textContent=flags.length;getEl("t-total").textContent=total;getEl("t-printed").textContent=printed;getEl("t-pending").textContent=Math.max(0,total-printed);const nb=getEl("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");const tSoldEl=getEl("t-sold");if(tSoldEl)tSoldEl.textContent=getSoldCount();}else nb.classList.remove("show");}
@@ -1177,49 +1177,13 @@ function printAll(){
 function runSearch(){
   const q=getEl("srch-input").value.trim().toLowerCase();
   const container=getEl("srch-results");
-  container.innerHTML="";
-  const allEntries=Object.entries(AUCTION_DATA).sort((a,b)=>a[1].species.localeCompare(b[1].species));
+  const allEntries=Object.entries(AUCTION_DATA);
   const matches=q?allEntries.filter(([id,b])=>
     b.species.toLowerCase().includes(q)||id.toLowerCase().includes(q)||b.vessel.toLowerCase().includes(q)||b.buyer.toLowerCase().includes(q)
   ):allEntries;
-  if(matches.length===0){container.innerHTML="<div style='text-align:center;padding:2rem;color:#6b7280;font-size:14px;'>No boxes found.</div>";return;}
-  // Group by species like boxes today
-  const groups={};
-  matches.forEach(([id,b])=>{
-    if(!groups[b.species])groups[b.species]=[];
-    groups[b.species].push({id,b});
-  });
-  Object.keys(groups).sort().forEach((sp,gi)=>{
-    const groupId="srch-group-"+gi;
-    const hdr=document.createElement("div");
-    hdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f3f4f6;border-radius:10px;margin-bottom:4px;margin-top:8px;cursor:pointer;user-select:none;";
-    const nPrinted=groups[sp].filter(({id})=>printedBoxIds.has(id)).length;
-    const nFlagged=groups[sp].filter(({id})=>flaggedBoxIds.has(id)).length;
-    hdr.innerHTML="<div><span style='font-weight:700;color:#374151;font-size:14px;'>"+sp+"</span><span style='font-size:12px;color:#6b7280;margin-left:8px;'>"+groups[sp].length+" boxes</span>"+(nFlagged?"<span style='font-size:11px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;margin-left:6px;'>"+nFlagged+" flagged</span>":"")+(nPrinted?"<span style='font-size:11px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;margin-left:4px;'>"+nPrinted+" printed</span>":"")+"</div><span id='chev-"+groupId+"' style='color:#9ca3af;font-size:12px;'>&#9660;</span>";
-    hdr.onclick=()=>toggleBoxGroup(groupId);
-    container.appendChild(hdr);
-    const listEl=document.createElement("div");
-    listEl.id=groupId;
-    listEl.style.display="none";
-    groups[sp].forEach(({id,b})=>{
-      const isPrinted=printedBoxIds.has(id);
-      const isFlagged=flaggedBoxIds.has(id);
-      const row=document.createElement("div");
-      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:3px;cursor:pointer;border-left:3px solid "+(isFlagged?"#dc2626":isPrinted?"#16a34a":"#e5e7eb")+";";
-      const badge=isFlagged?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;'>Flagged</span>":isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;'>Printed</span>":"<span style='font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:6px;'>Pending</span>";
-      const rpBtn=document.createElement("button");
-      rpBtn.textContent="Reprint";rpBtn.style.cssText="font-size:12px;background:#185FA5;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;flex-shrink:0;";
-      rpBtn.dataset.boxid=id;rpBtn.onclick=function(e){e.stopPropagation();reprintLabel(this.dataset.boxid,this);};
-      row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span> "+badge+"<div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+b.vessel+" — "+b.weight+" — "+b.buyer.split(" ")[0]+"</div></div>";
-      row.appendChild(rpBtn);
-      row.onclick=(e)=>{if(e.target!==rpBtn){goTo("ticket-screen");showTicketResult(id);}};
-      listEl.appendChild(row);
-    });
-    container.appendChild(listEl);
-  });
-  return; // prevent old code running
-
+  renderTwoLevel(matches,"species","vessel",container,"sr");
 }
+
 
 function reprintLabel(boxId,btn){
   const box=AUCTION_DATA[boxId];if(!box)return;
@@ -1770,45 +1734,100 @@ document.addEventListener("click",function(e){
   if(dd&&inp&&!dd.contains(e.target)&&e.target!==inp)dd.style.display="none";
 });
 function getSoldCount(){return Object.values(AUCTION_DATA).filter(b=>b.buyer&&b.buyer.length>0).length;}
+
+function renderTwoLevel(entries, outerKey, innerKey, container, groupPrefix){
+  container.innerHTML="";
+  if(entries.length===0){container.innerHTML="<div style='text-align:center;padding:2rem;color:#6b7280;font-size:14px;'>No boxes found.</div>";return;}
+  // Build outer groups
+  const outerGroups={};
+  entries.forEach(([id,b])=>{
+    const ok=b[outerKey]||"Unknown";
+    if(!outerGroups[ok])outerGroups[ok]=[];
+    outerGroups[ok].push([id,b]);
+  });
+  Object.keys(outerGroups).sort().forEach((outerVal,oi)=>{
+    const outerBoxes=outerGroups[outerVal];
+    const outerGroupId=groupPrefix+"-o-"+oi;
+    // Outer header
+    const nPrinted=outerBoxes.filter(([id])=>printedBoxIds.has(id)).length;
+    const nFlagged=outerBoxes.filter(([id])=>flaggedBoxIds.has(id)).length;
+    const outerHdr=document.createElement("div");
+    outerHdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1e3a5f;border-radius:10px;margin-bottom:4px;margin-top:10px;cursor:pointer;user-select:none;";
+    outerHdr.innerHTML="<div><span style='font-weight:700;color:white;font-size:14px;'>"+outerVal+"</span><span style='font-size:12px;color:rgba(255,255,255,0.6);margin-left:8px;'>"+outerBoxes.length+" boxes</span>"+(nFlagged?"<span style='font-size:11px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;margin-left:6px;'>"+nFlagged+" flagged</span>":"")+(nPrinted?"<span style='font-size:11px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;margin-left:4px;'>"+nPrinted+" printed</span>":"")+"</div><span id='chev-"+outerGroupId+"' style='color:rgba(255,255,255,0.7);font-size:12px;'>&#9660;</span>";
+    outerHdr.onclick=()=>toggleBoxGroup(outerGroupId);
+    container.appendChild(outerHdr);
+    // Outer list (hidden)
+    const outerList=document.createElement("div");
+    outerList.id=outerGroupId;
+    outerList.style.cssText="display:none;padding-left:8px;margin-bottom:4px;";
+    // Inner groups within this outer group
+    const innerGroups={};
+    outerBoxes.forEach(([id,b])=>{
+      const ik=b[innerKey]||"Unknown";
+      if(!innerGroups[ik])innerGroups[ik]=[];
+      innerGroups[ik].push([id,b]);
+    });
+    Object.keys(innerGroups).sort().forEach((innerVal,ii)=>{
+      const innerBoxes=innerGroups[innerVal];
+      const innerGroupId=groupPrefix+"-o-"+oi+"-i-"+ii;
+      const nP=innerBoxes.filter(([id])=>printedBoxIds.has(id)).length;
+      const nF=innerBoxes.filter(([id])=>flaggedBoxIds.has(id)).length;
+      // Inner header
+      const innerHdr=document.createElement("div");
+      innerHdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f3f4f6;border-radius:8px;margin-bottom:3px;margin-top:6px;cursor:pointer;user-select:none;";
+      innerHdr.innerHTML="<div><span style='font-weight:600;color:#374151;font-size:13px;'>"+innerVal+"</span><span style='font-size:11px;color:#6b7280;margin-left:6px;'>"+innerBoxes.length+" boxes</span>"+(nF?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;margin-left:4px;'>"+nF+" flagged</span>":"")+(nP?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;margin-left:3px;'>"+nP+" printed</span>":"")+"</div><span id='chev-"+innerGroupId+"' style='color:#9ca3af;font-size:11px;'>&#9660;</span>";
+      innerHdr.onclick=(e)=>{e.stopPropagation();toggleBoxGroup(innerGroupId);};
+      outerList.appendChild(innerHdr);
+      // Inner box list
+      const innerList=document.createElement("div");
+      innerList.id=innerGroupId;
+      innerList.style.cssText="display:none;padding-left:8px;margin-bottom:4px;";
+      innerBoxes.sort((a,b)=>{const sa=parseInt(a[1].size)||99;const sb=parseInt(b[1].size)||99;return sa!==sb?sa-sb:a[0].localeCompare(b[0]);}).forEach(([id,b])=>{
+        const isPrinted=printedBoxIds.has(id);
+        const isFlagged=flaggedBoxIds.has(id);
+        const row=document.createElement("div");
+        row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:white;border-radius:7px;margin-bottom:2px;cursor:pointer;border-left:3px solid "+(isFlagged?"#dc2626":isPrinted?"#16a34a":"#e5e7eb")+";";
+        const badge=isFlagged?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;'>Flagged</span>":isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;'>Printed</span>":"<span style='font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:6px;'>Pending</span>";
+        row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:12px;'>"+id+"</span> "+badge+"<div style='font-size:11px;color:#6b7280;margin-top:1px;'>"+b.weight+(b.size?" | Size "+b.size:"")+" — "+b.buyer.split(" ")[0]+"</div></div><span style='font-size:11px;color:#9ca3af;'>"+b.lot+"</span>";
+        row.onclick=()=>{goTo("ticket-screen");showTicketResult(id);};
+        innerList.appendChild(row);
+      });
+      outerList.appendChild(innerList);
+    });
+    container.appendChild(outerList);
+  });
+}
+
 function renderBoxList(orderBy){
   const bS=getEl("boxes-btn-species"),bV=getEl("boxes-btn-vessel");
   if(bS&&bV){bS.className=orderBy==="species"?"btn btn-blue":"btn btn-grey";bV.className=orderBy==="vessel"?"btn btn-blue":"btn btn-grey";}
   getEl("boxes-filter-label").textContent="Order by "+(orderBy==="species"?"species":"boat");
   const entries=Object.entries(AUCTION_DATA);
-  const groups={};
-  entries.forEach(([id,b])=>{
-    const key=orderBy==="species"?b.species:b.vessel;
-    if(!groups[key])groups[key]=[];
-    groups[key].push({id,b});
-  });
-  const container=getEl("boxes-list");
-  container.innerHTML="";
-  Object.keys(groups).sort().forEach((key,gi)=>{
-    const groupId="boxes-group-"+gi;
-    const hdr=document.createElement("div");
-    hdr.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f3f4f6;border-radius:10px;margin-bottom:4px;margin-top:8px;cursor:pointer;user-select:none;";
-    const nPrinted=groups[key].filter(({id})=>printedBoxIds.has(id)).length;
-    const nFlagged=groups[key].filter(({id})=>flaggedBoxIds.has(id)).length;
-    hdr.innerHTML="<div><span style='font-weight:700;color:#374151;font-size:14px;'>"+key+"</span><span style='font-size:12px;color:#6b7280;margin-left:8px;'>"+groups[key].length+" boxes</span>"+(nFlagged?"<span style='font-size:11px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;margin-left:6px;'>"+nFlagged+" flagged</span>":"")+(nPrinted?"<span style='font-size:11px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;margin-left:4px;'>"+nPrinted+" printed</span>":"")+"</div><span id='chev-"+groupId+"' style='color:#9ca3af;font-size:12px;'>&#9660;</span>";
-    hdr.onclick=()=>toggleBoxGroup(groupId);
-    container.appendChild(hdr);
-    const list=document.createElement("div");
-    list.id=groupId;
-    list.style.cssText="display:none;margin-bottom:4px;";
-    groups[key].sort((a,b)=>orderBy==="species"?a.b.vessel.localeCompare(b.b.vessel):a.b.species.localeCompare(b.b.species));
-    groups[key].forEach(({id,b})=>{
-      const isPrinted=printedBoxIds.has(id);
-      const isFlagged=flaggedBoxIds.has(id);
-      const row=document.createElement("div");
-      row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:8px;margin-bottom:3px;cursor:pointer;border-left:3px solid "+(isFlagged?"#dc2626":isPrinted?"#16a34a":"#e5e7eb")+";";
-      const badge=isFlagged?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:6px;'>Flagged</span>":isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:6px;'>Printed</span>":"<span style='font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 5px;border-radius:6px;'>Pending</span>";
-      row.innerHTML="<div><span style='font-weight:600;color:#0C447C;font-size:13px;'>"+id+"</span> "+badge+"<div style='font-size:12px;color:#6b7280;margin-top:2px;'>"+(orderBy==="species"?b.vessel:b.species)+" — "+b.weight+" — "+b.buyer.split(" ")[0]+"</div></div><span style='font-size:12px;color:#9ca3af;'>"+b.lot+"</span>";
-      row.onclick=()=>{goTo("ticket-screen");showTicketResult(id);};
-      list.appendChild(row);
-    });
-    container.appendChild(list);
-  });
+  const outerKey=orderBy==="species"?"species":"vessel";
+  const innerKey=orderBy==="species"?"vessel":"species";
+  renderTwoLevel(entries,outerKey,innerKey,getEl("boxes-list"),"bl");
 }
+
+
+function toggleBoxGroup(groupId){
+  const list=getEl(groupId);
+  const chev=getEl("chev-"+groupId);
+  if(!list)return;
+  const open=list.style.display==="block";
+  list.style.display=open?"none":"block";
+  if(chev)chev.innerHTML=open?"&#9660;":"&#9650;";
+}
+
+
+function renderPrintedList(orderBy){
+  const pS=getEl("printed-btn-species"),pV=getEl("printed-btn-vessel");
+  if(pS&&pV){pS.className=orderBy==="species"?"btn btn-blue":"btn btn-grey";pV.className=orderBy==="vessel"?"btn btn-blue":"btn btn-grey";}
+  const entries=Object.entries(AUCTION_DATA).filter(([id])=>printedBoxIds.has(id));
+  const outerKey=orderBy==="species"?"species":"vessel";
+  const innerKey=orderBy==="species"?"vessel":"species";
+  renderTwoLevel(entries,outerKey,innerKey,getEl("printed-list"),"pl");
+}
+
 
 function toggleBoxGroup(groupId){
   const list=getEl(groupId);
@@ -1863,6 +1882,9 @@ function showSplash(user,role){
   const userEl=getEl("splash-user");
   const bar=getEl("splash-bar");
   userEl.textContent=user.charAt(0).toUpperCase()+user.slice(1)+" · "+role;
+  // Hide login screen instantly before showing splash - prevents flash
+  const loginScreen=getEl("login-screen");
+  if(loginScreen)loginScreen.style.visibility="hidden";
   el.style.display="flex";el.style.opacity="1";
   // Stagger elements in with JS transitions
   function fadeIn(elem,delay){
