@@ -861,7 +861,7 @@ const DEMO_DATA={
 };
 let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={};
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
-function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen")clearTicketResult();if(id==="search-screen"){getEl("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");}
+function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen"&&!getEl("t-result").classList.contains("show"))clearTicketResult();if(id==="search-screen"){getEl("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");}
 function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=getEl("li-pass").value,err=getEl("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");getEl("menu-username").textContent=user;getEl("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
     const dataTile=getEl("data-tile");
     if(dataTile)dataTile.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"block":"none";
@@ -1358,7 +1358,15 @@ function submitFlag(){
 
 function returnToBoxInfo(){
   const returnId=getEl("flag-modal-overlay").dataset.returnboxid;
-  if(returnId){goTo("ticket-screen");showTicketResult(returnId);}
+  if(returnId){
+    // Navigate without clearing result, then reload
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    const ts=getEl("ticket-screen");if(ts)ts.classList.add("active");
+    window.scrollTo(0,0);
+    showTicketResult(returnId);
+  } else {
+    goTo("ticket-screen");
+  }
 }
 
 function flagModalIgnore(){
