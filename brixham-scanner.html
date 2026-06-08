@@ -1741,7 +1741,7 @@ document.addEventListener("click",function(e){
   const inp=getEl("t-search");
   if(dd&&inp&&!dd.contains(e.target)&&e.target!==inp)dd.style.display="none";
 });
-function getSoldCount(){return Object.values(AUCTION_DATA).filter(b=>b.buyer&&b.buyer.length>0).length;}
+function getSoldCount(){return Object.keys(AUCTION_DATA).length;}
 
 function renderTwoLevel(entries, outerKey, innerKey, container, groupPrefix){
   container.innerHTML="";
