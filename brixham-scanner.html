@@ -232,7 +232,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
   <div class="stats-row">
     <div class="stat" onclick="goTo('boxes-screen')" style="cursor:pointer;"><div class="s-num" id="t-total">0</div><div class="s-lbl">Boxes today</div></div>
     <div class="stat" onclick="goTo('printed-screen')" style="cursor:pointer;"><div class="s-num" id="t-printed">0</div><div class="s-lbl">Printed</div></div>
-    <div class="stat"><div class="s-num" id="t-pending">0</div><div class="s-lbl">Pending</div></div>
+    <div class="stat"><div class="s-num" id="t-pending">0</div><div class="s-lbl">Tickets buffered</div></div>
     <div class="stat" onclick="goTo('sold-screen')" style="cursor:pointer;"><div class="s-num" id="t-sold">0</div><div class="s-lbl">Boxes sold</div></div>
   </div>
   <div class="card">
@@ -880,6 +880,10 @@ let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
 function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";const rt=getEl("report-tile");if(rt)rt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen"&&!getEl("t-result").classList.contains("show"))clearTicketResult();if(id==="search-screen"){getEl("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");if(id==="sold-screen")renderSoldList("species");}
 function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=getEl("li-pass").value,err=getEl("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");getEl("menu-username").textContent=user;getEl("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
+    // Request notification permission
+    if("Notification" in window&&Notification.permission==="default"){
+      Notification.requestPermission();
+    }
     // Keep screen awake during session
     if("wakeLock" in navigator){navigator.wakeLock.request("screen").then(wl=>{window._wakeLock=wl;wl.addEventListener("release",()=>{if(currentUser)navigator.wakeLock.request("screen").then(w=>window._wakeLock=w);});}).catch(()=>{});}
     const dataTile=getEl("data-tile");
@@ -890,7 +894,7 @@ function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=g
 function signOut(){if(window._wakeLock){window._wakeLock.release();window._wakeLock=null;}currentUser="";currentRole="";const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
 getEl("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 getEl("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")getEl("li-pass").focus();});
-function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;getEl("ms-boxes").textContent=total;getEl("ms-printed").textContent=printed;getEl("ms-flags").textContent=flags.length;getEl("t-total").textContent=total;getEl("t-printed").textContent=printed;getEl("t-pending").textContent=Math.max(0,total-printed);const nb=getEl("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");
+function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;getEl("ms-boxes").textContent=total;getEl("ms-printed").textContent=printed;getEl("ms-flags").textContent=flags.length;getEl("t-total").textContent=total;getEl("t-printed").textContent=printed;const buffered=Math.max(0,getSoldCount()-printed);getEl("t-pending").textContent=buffered;const nb=getEl("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");
   const sold=getSoldCount();
   const msSold=getEl("ms-sold");if(msSold)msSold.textContent=sold;
   const tSold=getEl("t-sold");if(tSold)tSold.textContent=sold;
@@ -934,12 +938,15 @@ function stopCamera(prefix){scannings[prefix]=false;if(rafIds[prefix])cancelAnim
 // Don't clear result if box data is already showing
 }
 const scanStartTimes={};
-function tick(prefix){if(!scannings[prefix])return;const vid=getEl(prefix+"-video"),can=getEl(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}
+function tick(prefix){if(!scannings[prefix])return;const vid=getEl(prefix+"-video"),can=getEl(prefix+"-canvas"),ctx=can.getContext("2d");if(vid.readyState===vid.HAVE_ENOUGH_DATA){ctx.drawImage(vid,0,0,can.width,can.height);const img=ctx.getImageData(0,0,can.width,can.height),code=jsQR(img.data,img.width,img.height);if(code){stopCamera(prefix);const id=code.data.trim().toUpperCase();
+      // Haptic feedback
+      if(navigator.vibrate)navigator.vibrate([50,30,50]);
+      if(prefix==="t")showTicketResult(id);else showFlagFound(id);return;}}
 // Auto-stop after 90s
 if(!scanStartTimes[prefix])scanStartTimes[prefix]=Date.now();
 if(Date.now()-scanStartTimes[prefix]>90000){stopCamera(prefix);scanStartTimes[prefix]=null;return;}
 rafIds[prefix]=requestAnimationFrame(()=>tick(prefix));}
-function ticketLookup(){const val=getEl("t-search").value.trim().toUpperCase();if(val)showTicketResult(val);}
+function ticketLookup(){const val=getEl("t-search").value.trim().toUpperCase();if(val){if(navigator.vibrate)navigator.vibrate(40);showTicketResult(val);}}
 document.addEventListener("keydown",function(e){if(e.key==="Enter"&&getEl("t-search")===document.activeElement)ticketLookup();});
 
 function showTicketResult(boxId){
@@ -2159,6 +2166,30 @@ async function tryLoadNeptune(){
     rebuildChips();
     showToast("Live Neptune data loaded");
   }
+}
+
+
+function sendFlagNotification(boxId, issue, buyer){
+  if(!("Notification" in window))return;
+  if(Notification.permission!=="granted"){
+    Notification.requestPermission().then(p=>{if(p==="granted")_sendNotif(boxId,issue,buyer);});
+    return;
+  }
+  _sendNotif(boxId,issue,buyer);
+}
+function _sendNotif(boxId, issue, buyer){
+  try {
+    const n=new Notification("🚩 Box flagged — "+boxId,{
+      body:(buyer?buyer+": ":"")+issue,
+      icon:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230C447C'/><text y='.9em' font-size='80' x='10'>🚩</text></svg>",
+      tag:"flag-"+boxId,
+      requireInteraction:false,
+      silent:false
+    });
+    // Auto-close after 6 seconds
+    setTimeout(()=>n.close(),6000);
+    n.onclick=()=>{window.focus();n.close();goTo("notif-screen");};
+  } catch(e){console.log("Notification error:",e);}
 }
 
 function previewConsolidatedLabel(data){
