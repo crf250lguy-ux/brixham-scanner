@@ -1,4 +1,4 @@
-const CACHE="bta-scanner-v1";
+const CACHE="bta-scanner-v2";
 const ASSETS=[
   "./brixham-scanner.html",
   "./manifest.json"
