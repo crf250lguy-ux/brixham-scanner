@@ -896,9 +896,13 @@ const DEMO_DATA={
   "BX-466":{species:"Monkfish",weight:"40kg",grade:"E",size:1,lot:"L-2419",vessel:"Ella",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",sold:true},
   "BX-467":{species:"Ray Wings",weight:"40kg",grade:"E",size:3,lot:"L-2420",vessel:"Joyful Spirit",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",sold:true}
 };
-let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={},recentScans=[];
+let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={},recentScans=[];try{sessionStorage.removeItem("bta_user");sessionStorage.removeItem("bta_role");}catch(e){}
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
-function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";const rt=getEl("report-tile");if(rt)rt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";
+function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);
+  // Push history state so phone back button works
+  if(id!=="login-screen"){
+    try{history.pushState({screen:id},"",location.pathname+"?screen="+id);}catch(e){}
+  }if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";const rt=getEl("report-tile");if(rt)rt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";
     const isPriv2=currentRole==="Admin"||currentRole==="Auctioneer";
     const st=getEl("supply-tile");if(st)st.style.display=isPriv2?"none":"";
     const mst=getEl("marksold-tile");if(mst)mst.style.display=isPriv2?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen"){
@@ -936,6 +940,25 @@ function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flag
   updateMenuStats();
 }
 function getEl(id){return document.getElementById(id);}
+
+// Restore session after refresh
+window.addEventListener("load",function(){
+  try{
+    const savedUser=sessionStorage.getItem("bta_user");
+    const savedRole=sessionStorage.getItem("bta_role");
+    if(savedUser&&savedRole){
+      currentUser=savedUser;currentRole=savedRole;
+      rebuildChips();initCustomTicketListeners();
+      const dt=getEl("data-tile");if(dt)dt.style.display=(savedRole==="Admin"||savedRole==="Auctioneer")?"":"none";
+      const rt=getEl("report-tile");if(rt)rt.style.display=(savedRole==="Admin"||savedRole==="Auctioneer")?"":"none";
+      const isPriv=savedRole==="Admin"||savedRole==="Auctioneer";
+      const st=getEl("supply-tile");if(st)st.style.display=isPriv?"none":"";
+      const mst=getEl("marksold-tile");if(mst)mst.style.display=isPriv?"":"none";
+      const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";
+      goTo("menu-screen");
+    }
+  }catch(e){}
+});
 function parseWeight(w){return parseFloat((w||"").replace(/[^0-9.]/g,""))||0;}
 function getGroupBoxes(groupId){return Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===groupId);}
 function getFullWeight(groupBoxes){const wc={};groupBoxes.forEach(([id,b])=>{wc[b.weight]=(wc[b.weight]||0)+1;});const top=Object.entries(wc).sort((a,b)=>b[1]-a[1])[0];return top?top[0]:"";}
@@ -2045,6 +2068,8 @@ function showSplash(user,role){
   const userEl=getEl("splash-user");
   const bar=getEl("splash-bar");
   if(userEl)userEl.textContent=user.charAt(0).toUpperCase()+user.slice(1)+" · "+role;
+  // Save session so refresh doesn't log out
+  try{sessionStorage.setItem("bta_user",user);sessionStorage.setItem("bta_role",role);}catch(e){}
   const loginScreen=getEl("login-screen");
   if(loginScreen)loginScreen.style.visibility="hidden";
   el.style.display="flex";el.style.opacity="1";
@@ -2396,6 +2421,33 @@ function renderRecentScans(){
     list.appendChild(row);
   });
 }
+
+
+// Handle browser/phone back button
+window.addEventListener("popstate",function(e){
+  if(!currentUser){return;} // not logged in - let browser handle
+  e.preventDefault();
+  const state=e.state;
+  if(state&&state.screen){
+    // Navigate to that screen without pushing more history
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    const target=getEl(state.screen);
+    if(target){
+      target.classList.add("active");
+      window.scrollTo(0,0);
+      if(state.screen==="notif-screen")renderNotifications();
+      if(state.screen==="boxes-screen")renderBoxList("species");
+      if(state.screen==="printed-screen")renderPrintedList("species");
+      if(state.screen==="sold-screen")renderSoldList("species");
+      if(state.screen==="search-screen"){getEl("srch-input").value="";runSearch();}
+      if(state.screen==="marksold-screen")renderMarkSoldList("species");
+    }
+  } else if(currentUser){
+    // No state - go to menu
+    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+    const menu=getEl("menu-screen");if(menu){menu.classList.add("active");updateMenuStats();}
+  }
+});
 
 function previewConsolidatedLabel(data){
   const today=new Date().toLocaleDateString("en-GB");
