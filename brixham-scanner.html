@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="BTA Scanner"/>
 <meta name="theme-color" content="#0C447C"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png"/>
 <title>Brixham Fish Market - Box Scanner</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
-.screen{display:none;}.screen.active{display:block;}#login-screen.active{display:flex;}
-#login-screen{min-height:100vh;background:linear-gradient(160deg,#0a2e52,#0C447C 55%,#1a5c99);flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow-x:hidden;font-family:system-ui,sans-serif;background:#f3f4f6;}
+.screen{display:none;width:100%;min-height:100vh;min-height:100dvh;background:#f3f4f6;overflow-x:hidden;}.screen.active{display:block;}#login-screen.active{display:flex;}
+#login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;height:100dvh;background:linear-gradient(160deg,#0a2e52,#0C447C 55%,#1a5c99);padding:1.5rem;box-sizing:border-box;overflow:hidden;position:fixed;top:0;left:0;right:0;bottom:0;}
 .login-box{background:white;border-radius:20px;padding:2rem 1.75rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 .login-logo-wrap{text-align:center;margin-bottom:1.25rem;}
 .login-logo-wrap img{width:130px;height:130px;object-fit:contain;border-radius:12px;}
@@ -29,7 +30,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .login-error{background:#fee2e2;color:#991b1b;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:1rem;display:none;text-align:center;}
 .login-error.show{display:block;}
 .login-footer{text-align:center;margin-top:1.25rem;font-size:12px;color:rgba(255,255,255,0.45);}
-.app{max-width:440px;margin:0 auto;padding:1rem;}
+.app{width:100%;padding:1rem;min-height:100vh;min-height:100dvh;box-sizing:border-box;}
 .header{background:#0C447C;color:white;border-radius:14px;padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px;}
 .header-logo{width:42px;height:42px;object-fit:contain;border-radius:8px;background:white;padding:3px;flex-shrink:0;}
 .header-text h1{font-size:15px;font-weight:700;}
@@ -39,12 +40,12 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .signout-btn{font-size:11px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;}
 .back-btn{font-size:12px;background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;margin-bottom:4px;}
 .menu-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem;}
-.mstat{background:white;border-radius:12px;padding:12px 8px;text-align:center;border:1px solid #e5e7eb;cursor:pointer;transition:all .15s;}
+.mstat{background:white;border-radius:12px;padding:14px 6px;text-align:center;border:1px solid #e5e7eb;cursor:pointer;transition:all .15s;}
 .mstat:hover{border-color:#0C447C;background:#f0f6ff;}
-.mstat .s-num{font-size:22px;font-weight:800;color:#0C447C;letter-spacing:-0.5px;}
-.mstat .s-lbl{font-size:10px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
-.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
-.menu-card{background:white;border-radius:16px;padding:1.25rem 1rem;text-align:center;cursor:pointer;border:1px solid #e5e7eb;transition:all .15s;position:relative;overflow:hidden;}
+.mstat .s-num{font-size:24px;font-weight:800;color:#0C447C;letter-spacing:-0.5px;}
+.mstat .s-lbl{font-size:9px;color:#6b7280;margin-top:3px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
+.menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;}
+.menu-card{background:white;border-radius:16px;padding:1.1rem 0.75rem;text-align:center;cursor:pointer;border:1px solid #e5e7eb;transition:all .15s;position:relative;overflow:hidden;}
 .menu-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--card-accent,#0C447C);border-radius:16px 16px 0 0;}
 .menu-card:hover{border-color:#0C447C;box-shadow:0 4px 12px rgba(12,68,124,0.12);transform:translateY(-1px);}
 .menu-card:active{transform:scale(0.97);}
@@ -53,7 +54,7 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
 .menu-card.green{--card-accent:#16a34a;}
 .menu-card.amber{--card-accent:#d97706;}
 .menu-icon{font-size:36px;margin-bottom:10px;}
-.menu-label{font-size:14px;font-weight:700;color:#111827;margin-bottom:4px;}
+.menu-label{font-size:13px;font-weight:700;color:#111827;margin-bottom:3px;}
 .menu-desc{font-size:11px;color:#6b7280;line-height:1.4;}
 
 
@@ -199,24 +200,23 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <div class="header-text"><h1>Brixham Fish Market</h1><p id="menu-role-label">Operator</p></div>
     <div class="header-right"><span id="menu-username">-</span><button class="signout-btn" onclick="signOut()">Sign out</button></div>
   </div>
-  <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Today's summary</div>
-  <div class="menu-stats" style="grid-template-columns:repeat(5,1fr);">
+  <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Today's summary</div>
+  <div class="menu-stats">
     <div class="mstat" onclick="goTo('boxes-screen')" style="cursor:pointer;"><div class="s-num" id="ms-boxes">0</div><div class="s-lbl">Boxes today</div></div>
     <div class="mstat" onclick="goTo('sold-screen')" style="cursor:pointer;"><div class="s-num" id="ms-sold">0</div><div class="s-lbl">Boxes sold</div></div>
-    <div class="mstat" onclick="goTo('printed-screen')" style="cursor:pointer;"><div class="s-num" id="ms-printed">0</div><div class="s-lbl">Printed</div></div>
     <div class="mstat"><div class="s-num" id="ms-buffered">0</div><div class="s-lbl">Buffered</div></div>
-    <div class="mstat" onclick="goTo('notif-screen')" style="cursor:pointer;"><div class="s-num" id="ms-flags">0</div><div class="s-lbl">Flags</div></div>
+    <div class="mstat" onclick="goTo('printed-screen')" style="cursor:pointer;"><div class="s-num" id="ms-printed">0</div><div class="s-lbl">Printed</div></div>
   </div>
   <div style="margin-bottom:1rem;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
       <span style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;">Progress</span>
       <span style="font-size:11px;color:#6b7280;" id="menu-progress-label">0 of 0 printed</span>
     </div>
-    <div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;">
+    <div style="height:5px;background:#e5e7eb;border-radius:3px;overflow:hidden;">
       <div id="menu-progress-bar" style="height:100%;background:linear-gradient(90deg,#0C447C,#185FA5);border-radius:3px;width:0%;transition:width 0.4s ease;"></div>
     </div>
   </div>
-  <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;margin-top:4px;">Actions</div>
+  <div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;margin-top:2px;">Actions</div>
   <div class="menu-grid">
     <div class="menu-card blue" onclick="goTo('ticket-screen')"><div class="menu-icon">🏷️</div><div class="menu-label">Start ticketing</div><div class="menu-desc">Scan a box QR and print a label</div></div>
     <div class="menu-card red" onclick="goTo('flag-screen')"><div class="menu-icon">🚩</div><div class="menu-label">Flag a box</div><div class="menu-desc">Report a problem with a box</div></div>
@@ -257,6 +257,10 @@ body{font-family:system-ui,sans-serif;background:#f0f4f8;min-height:100vh;}
     <button class="btn btn-blue" id="t-cam-btn" onclick="toggleCamera('t')">Start camera</button>    <div style="position:relative;margin-top:10px;">
       <input type="text" id="t-search" placeholder="Search box ID, species, vessel or buyer..." oninput="ticketSearch()" onfocus="ticketSearch()" style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #e5e7eb;font-size:14px;color:#111827;background:#f9fafb;outline:none;"/>
       <div id="t-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid #e5e7eb;border-radius:10px;max-height:300px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-top:4px;"></div>
+    </div>
+    <div id="t-recent" style="display:none;margin-top:14px;">
+      <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Recently scanned</div>
+      <div id="t-recent-list" style="display:flex;flex-direction:column;gap:4px;"></div>
     </div>
 
   </div>
@@ -892,14 +896,14 @@ const DEMO_DATA={
   "BX-466":{species:"Monkfish",weight:"40kg",grade:"E",size:1,lot:"L-2419",vessel:"Ella",buyer:"DaySeaDay",buyerLoc:"Newlyn, Cornwall",sold:true},
   "BX-467":{species:"Ray Wings",weight:"40kg",grade:"E",size:3,lot:"L-2420",vessel:"Joyful Spirit",buyer:"Andrew Trust Ltd",buyerLoc:"Teignmouth, Devon",sold:true}
 };
-let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={};
+let AUCTION_DATA=Object.assign({},DEMO_DATA),currentUser="",currentRole="",flags=[],printed=0,selectedIssue="",printedBoxIds=new Set(),flaggedBoxIds=new Set(),ignoredBoxIds=new Set(),customTickets={},recentScans=[];
 let streams={t:null,f:null},scannings={t:false,f:false},rafIds={t:null,f:null},photoStream=null,capturedPhotoData=null;
 function goTo(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));const targetScreen=getEl(id);if(!targetScreen){console.error("Screen not found:",id);return;}targetScreen.classList.add("active");window.scrollTo(0,0);if(id==="menu-screen"){updateMenuStats();const dt=getEl("data-tile");if(dt)dt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";const rt=getEl("report-tile");if(rt)rt.style.display=(currentRole==="Admin"||currentRole==="Auctioneer")?"":"none";
     const isPriv2=currentRole==="Admin"||currentRole==="Auctioneer";
     const st=getEl("supply-tile");if(st)st.style.display=isPriv2?"none":"";
     const mst=getEl("marksold-tile");if(mst)mst.style.display=isPriv2?"":"none";}if(id==="notif-screen")renderNotifications();if(id==="flag-screen")clearFlagForm();if(id==="ticket-screen"){
-      // Only clear if coming fresh (no result showing and not from a flag/modal action)
       if(!getEl("t-result").classList.contains("show"))clearTicketResult();
+      renderRecentScans();
     }if(id==="search-screen"){getEl("srch-input").value="";runSearch();}if(id==="boxes-screen")renderBoxList("species");if(id==="printed-screen")renderPrintedList("species");if(id==="sold-screen")renderSoldList("species");if(id==="marksold-screen")renderMarkSoldList("species");}
 function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=getEl("li-pass").value,err=getEl("login-error");if(STAFF[user]&&STAFF[user].pass===pass){currentUser=user;currentRole=STAFF[user].role;err.classList.remove("show");getEl("menu-username").textContent=user;getEl("menu-role-label").textContent=currentRole;rebuildChips();initCustomTicketListeners();
     // Request notification permission
@@ -916,10 +920,10 @@ function doLogin(){const user=getEl("li-user").value.trim().toLowerCase(),pass=g
     const supplyTile=getEl("supply-tile");if(supplyTile)supplyTile.style.display=isPriv?"none":"";
     const markSoldTile=getEl("marksold-tile");if(markSoldTile)markSoldTile.style.display=isPriv?"":"none";
     showSplash(user,currentRole);}else{err.classList.add("show");getEl("li-pass").value="";}}
-function signOut(){if(window._wakeLock){window._wakeLock.release();window._wakeLock=null;}currentUser="";currentRole="";const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
+function signOut(){if(window._wakeLock){window._wakeLock.release();window._wakeLock=null;}recentScans=[];currentUser="";currentRole="";const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";stopCamera("t");stopCamera("f");stopPhotoCamera();getEl("li-user").value="";getEl("li-pass").value="";getEl("login-error").classList.remove("show");document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));getEl("login-screen").classList.add("active");}
 getEl("li-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
 getEl("li-user").addEventListener("keydown",e=>{if(e.key==="Enter")getEl("li-pass").focus();});
-function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;getEl("ms-boxes").textContent=total;getEl("ms-printed").textContent=printed;getEl("ms-flags").textContent=flags.length;getEl("t-total").textContent=total;getEl("t-printed").textContent=printed;const buffered=Math.max(0,getSoldCount()-printed);getEl("t-pending").textContent=buffered;const msBuf=getEl("ms-buffered");if(msBuf)msBuf.textContent=buffered;const nb=getEl("notif-badge");if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");
+function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCount=flags.filter(f=>!f.resolved).length;const _elB=getEl("ms-boxes");if(_elB)_elB.textContent=total;const _elP=getEl("ms-printed");if(_elP)_elP.textContent=printed;const _elF=getEl("ms-flags");if(_elF)_elF.textContent=flags.length;const _elTT=getEl("t-total");if(_elTT)_elTT.textContent=total;const _elTP=getEl("t-printed");if(_elTP)_elTP.textContent=printed;const buffered=Math.max(0,getSoldCount()-printed);const _elTPe=getEl("t-pending");if(_elTPe)_elTPe.textContent=buffered;const msBuf=getEl("ms-buffered");if(msBuf)msBuf.textContent=buffered;const nb=getEl("notif-badge");if(nb){if(flagCount>0){nb.textContent=flagCount;nb.classList.add("show");}else nb.classList.remove("show");}
   const sold=getSoldCount();
   const msSold=getEl("ms-sold");if(msSold)msSold.textContent=sold;
   const tSold=getEl("t-sold");if(tSold)tSold.textContent=sold;
@@ -993,6 +997,7 @@ function showTicketResult(boxId){
   const box=AUCTION_DATA[boxId];
   if(!box){getEl("t-error").classList.add("show");return;}
   getEl("t-actual-boxid").value=boxId;
+  addRecentScan(boxId);
   // Sold/unsold badge and banner
   const soldBadge=getEl("t-sold-badge");
   if(soldBadge){
@@ -2034,42 +2039,34 @@ function renderPrintedList(orderBy){
 
 function showSplash(user,role){
   const el=getEl("splash-screen");
+  if(!el){goTo("menu-screen");return;}
   const logo=getEl("splash-logo");
   const title=getEl("splash-title");
   const userEl=getEl("splash-user");
   const bar=getEl("splash-bar");
-  userEl.textContent=user.charAt(0).toUpperCase()+user.slice(1)+" · "+role;
-  // Hide login screen instantly before showing splash - prevents flash
+  if(userEl)userEl.textContent=user.charAt(0).toUpperCase()+user.slice(1)+" · "+role;
   const loginScreen=getEl("login-screen");
   if(loginScreen)loginScreen.style.visibility="hidden";
   el.style.display="flex";el.style.opacity="1";
-  // Stagger elements in with JS transitions
   function fadeIn(elem,delay){
-    setTimeout(()=>{
-      elem.style.transition="opacity 0.5s ease, transform 0.5s ease";
-      elem.style.opacity="1";
-      elem.style.transform="translateY(0)";
-    },delay);
+    if(!elem)return;
+    setTimeout(()=>{elem.style.transition="opacity 0.5s ease, transform 0.5s ease";elem.style.opacity="1";elem.style.transform="translateY(0)";},delay);
   }
-  fadeIn(logo,100);
-  fadeIn(title,250);
-  fadeIn(userEl,450);
-  setTimeout(()=>{
-    bar.style.transition="width 1.2s ease";
-    bar.style.width="100%";
-  },500);
-  // Fade out
+  fadeIn(logo,100);fadeIn(title,250);fadeIn(userEl,450);
+  setTimeout(()=>{if(bar){bar.style.transition="width 1.2s ease";bar.style.width="100%";}},500);
+  function finishSplash(){
+    el.style.display="none";el.style.opacity="1";
+    try{[logo,title,userEl].forEach(e=>{if(e){e.style.opacity="0";e.style.transform="translateY(16px)";e.style.transition="";}});}catch(e){}
+    if(bar){bar.style.width="0";bar.style.transition="";}
+    goTo("menu-screen");
+  }
   setTimeout(()=>{
     el.style.transition="opacity 0.4s ease";
     el.style.opacity="0";
-    setTimeout(()=>{
-      el.style.display="none";
-      el.style.opacity="1";
-      [logo,title,userEl].forEach(e=>{e.style.opacity="0";e.style.transform="translateY(16px)";e.style.transition="";});
-      bar.style.width="0";bar.style.transition="";
-      goTo("menu-screen");
-    },400);
+    setTimeout(finishSplash,400);
   },2200);
+  // Safety fallback
+  setTimeout(()=>{if(el.style.display!=="none")finishSplash();},3200);
 }
 
 
@@ -2362,6 +2359,44 @@ function toggleFlagAll(e){
   }
 }
 
+
+function addRecentScan(boxId){
+  const box=AUCTION_DATA[boxId];if(!box)return;
+  // Remove if already in list
+  recentScans=recentScans.filter(id=>id!==boxId);
+  // Add to front
+  recentScans.unshift(boxId);
+  // Keep only last 5
+  recentScans=recentScans.slice(0,5);
+  renderRecentScans();
+}
+
+function renderRecentScans(){
+  const container=getEl("t-recent");
+  const list=getEl("t-recent-list");
+  if(!container||!list)return;
+  if(recentScans.length===0){container.style.display="none";return;}
+  container.style.display="block";
+  list.innerHTML="";
+  recentScans.forEach(id=>{
+    const box=AUCTION_DATA[id];if(!box)return;
+    const isPrinted=printedBoxIds.has(id);
+    const isFlagged=flaggedBoxIds.has(id);
+    const isSold=box.sold!==false;
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:white;border-radius:10px;cursor:pointer;border:1px solid #e5e7eb;";
+    const badge=isFlagged?"<span style='font-size:10px;background:#fee2e2;color:#991b1b;padding:1px 6px;border-radius:6px;'>Flagged</span>":
+      !isSold?"<span style='font-size:10px;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:6px;'>Unsold</span>":
+      isPrinted?"<span style='font-size:10px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:6px;'>Printed</span>":
+      "<span style='font-size:10px;background:#f3f4f6;color:#6b7280;padding:1px 6px;border-radius:6px;'>Pending</span>";
+    row.innerHTML="<div><span style='font-weight:700;color:#0C447C;font-size:13px;'>"+id+"</span> "+badge+
+      "<div style='font-size:11px;color:#6b7280;margin-top:2px;'>"+box.species+" — "+(box.buyer||"Unsold")+"</div></div>"+
+      "<span style='font-size:11px;color:#9ca3af;'>"+box.vessel.split(" ")[0]+"</span>";
+    row.onclick=()=>showTicketResult(id);
+    list.appendChild(row);
+  });
+}
+
 function previewConsolidatedLabel(data){
   const today=new Date().toLocaleDateString("en-GB");
   const count=parseInt(data.count)||1;
@@ -2578,7 +2613,7 @@ function previewConsolidatedLabel(data){
 
 
 <!-- SPLASH -->
-<div id="splash-screen" style="display:none;position:fixed;inset:0;background:#0C447C;z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+<div id="splash-screen" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;background:#0C447C;z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
   <div id="splash-logo" style="font-size:44px;font-weight:900;color:white;letter-spacing:-1px;opacity:0;transform:translateY(16px);">BTA</div>
   <div id="splash-title" style="font-size:15px;color:rgba(255,255,255,0.7);letter-spacing:.25em;text-transform:uppercase;margin-top:8px;opacity:0;transform:translateY(16px);">Brixham Trawler Agents</div>
   <div id="splash-user" style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:32px;opacity:0;transform:translateY(16px);"></div>
