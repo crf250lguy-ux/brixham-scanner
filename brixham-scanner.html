@@ -935,14 +935,14 @@ function updateMenuStats(){const total=Object.keys(AUCTION_DATA).length,flagCoun
   const pBar=getEl("menu-progress-bar");
   const pLabel=getEl("menu-progress-label");
   if(pBar&&pLabel){const pct=total>0?Math.round(printed/total*100):0;pBar.style.width=pct+"%";pLabel.textContent=printed+" of "+total+" printed ("+pct+"%)";}
-  updateUndoBtn();}
+  }
 function rebuildChips(){printedBoxIds=new Set();printedTicketKeys=new Set();flaggedBoxIds=new Set();ignoredBoxIds=new Set();customTickets={};
   updateMenuStats();
 }
 function getEl(id){return document.getElementById(id);}
 
 // Restore session after refresh
-window.addEventListener("load",function(){
+function restoreSession(){
   try{
     const savedUser=sessionStorage.getItem("bta_user");
     const savedRole=sessionStorage.getItem("bta_role");
@@ -956,9 +956,13 @@ window.addEventListener("load",function(){
       const mst=getEl("marksold-tile");if(mst)mst.style.display=isPriv?"":"none";
       const ls=getEl("login-screen");if(ls)ls.style.visibility="visible";
       goTo("menu-screen");
+      return true;
     }
   }catch(e){}
-});
+  return false;
+}
+document.addEventListener("DOMContentLoaded",restoreSession);
+window.addEventListener("load",restoreSession);
 function parseWeight(w){return parseFloat((w||"").replace(/[^0-9.]/g,""))||0;}
 function getGroupBoxes(groupId){return Object.entries(AUCTION_DATA).filter(([id,b])=>b.groupId===groupId);}
 function getFullWeight(groupBoxes){const wc={};groupBoxes.forEach(([id,b])=>{wc[b.weight]=(wc[b.weight]||0)+1;});const top=Object.entries(wc).sort((a,b)=>b[1]-a[1])[0];return top?top[0]:"";}
@@ -1346,7 +1350,6 @@ function printLabel(){
   printedBoxIds.add(boxId);
   printed=[...printedBoxIds].filter(k=>!k.startsWith("group_")).length;
   logAudit("Printed",boxId);
-  pushUndo("print",{ids:[boxId]});
   btn.textContent="Printing...";
   updateMenuStats();
   setTimeout(()=>{btn.textContent="Reprint label";btn.className="btn btn-blue";btn.disabled=false;},2500);
@@ -2114,7 +2117,7 @@ function logAudit(action,detail){
 
 // ── Undo ──
 const undoStack=[];
-function pushUndo(type,data){undoStack.push({type,data,time:Date.now()});if(undoStack.length>20)undoStack.shift();updateUndoBtn();}
+function pushUndo(type,data){undoStack.push({type,data,time:Date.now()});if(undoStack.length>20)undoStack.shift();}
 function updateUndoBtn(){const btn=getEl("undo-fab");if(btn)btn.style.display=undoStack.length>0?"flex":"none";}
 function doUndo(){
   if(undoStack.length===0)return;
@@ -2134,7 +2137,7 @@ function doUndo(){
       showToast("Undo: flag removed");
     }
   }
-  updateUndoBtn();
+  
 }
 function showToast(msg){
   let t=getEl("toast-msg");
@@ -2740,8 +2743,6 @@ function previewConsolidatedLabel(data){
 </div></div>
 
 
-<!-- UNDO FAB -->
-<div id="undo-fab" onclick="doUndo()" style="display:none;position:fixed;bottom:20px;right:20px;width:48px;height:48px;background:#0C447C;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:7000;font-size:20px;color:white;border:none;">&#8630;</div>
 
   <script>
     if("serviceWorker" in navigator){
